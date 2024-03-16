@@ -41,7 +41,43 @@ const getServey = async (req, res) => {
     }
 }
 
+const getServeyAnswer = async (req, res) => {
+    try {
+        let surveyQuestionWithAnswer = [];
+
+        // Retrieve all survey answers
+        const surveyAnswers = await SurveyAnswer.find();
+
+        // Extract questionIds from survey answers
+        const questionIds = surveyAnswers.map(answer => answer.questionId);
+
+        // Retrieve questions based on the extracted questionIds
+        const questions = await Survey.find({ _id: { $in: questionIds } });
+
+        // Associate each survey answer with its corresponding question
+        surveyQuestionWithAnswer = surveyAnswers.map(answer => {
+            const question = questions.find(q => q._id.toString() === answer.questionId.toString());
+            return {
+                _id: answer._id,
+                questionId: answer.questionId,
+                question: question, // Adding question to the object
+                answers: answer.answers,
+                correctAnswers: answer.correctAnswers,
+                createdAt: answer.createdAt,
+                updatedAt: answer.updatedAt,
+                __v: answer.__v
+            };
+        });
+
+        res.status(200).json({ data: surveyQuestionWithAnswer });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
+
 module.exports = {
     createServey,
-    getServey
+    getServey,
+    getServeyAnswer
 }
