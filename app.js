@@ -9,9 +9,11 @@ var logger = require('morgan');
 const userRouter = require('./routes/userRouter');
 const selectTherapyRouter = require('./routes/SelectTherapyRouter');
 const serveyRouter = require('./routes/serveyRouter');
+const packageRouter = require('./routes/PackageRouter');
 //helper function
 const { connectToDatabase } = require('./helpers/connection');
 const validateResponse = require('./middlewares.js/validator');
+
 
 var app = express();
 
@@ -30,17 +32,18 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
+app.use('/public', express.static(__dirname + '/public'));
+
 //Routes
 app.use('/api/v1/user', userRouter);
 app.use('/api/v1/therapy', selectTherapyRouter);
 app.use('/api/v1/servey', serveyRouter);
+app.use('/api/v1/package', packageRouter);
 console.log("sdjfkhnkjhf");
 // test route
 app.get('/api/test', (req, res) => {
   res.send('I am responding!');
 });
-
-app.use('/public', express.static(__dirname + '/public'));
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
