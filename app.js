@@ -10,6 +10,8 @@ const userRouter = require('./routes/userRouter');
 const selectTherapyRouter = require('./routes/SelectTherapyRouter');
 const serveyRouter = require('./routes/serveyRouter');
 const packageRouter = require('./routes/PackageRouter');
+const appointmentRouter = require('./routes/apointmentRouter');
+const meowImageRouter = require('./routes/meowUploadRouter');
 //helper function
 const { connectToDatabase } = require('./helpers/connection');
 const validateResponse = require('./middlewares.js/validator');
@@ -39,6 +41,8 @@ app.use('/api/v1/user', userRouter);
 app.use('/api/v1/therapy', selectTherapyRouter);
 app.use('/api/v1/servey', serveyRouter);
 app.use('/api/v1/package', packageRouter);
+app.use('/api/v1/apointment', appointmentRouter);
+app.use('/api/v1/meowimage', meowImageRouter);
 console.log("sdjfkhnkjhf");
 // test route
 app.get('/api/test', (req, res) => {
