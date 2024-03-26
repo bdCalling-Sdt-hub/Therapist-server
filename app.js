@@ -11,6 +11,8 @@ const selectTherapyRouter = require('./routes/SelectTherapyRouter');
 const serveyRouter = require('./routes/serveyRouter');
 const packageRouter = require('./routes/PackageRouter');
 const appointmentRouter = require('./routes/apointmentRouter');
+const therapistRouter = require('./routes/therapistRouter');
+// test api route
 const meowImageRouter = require('./routes/meowUploadRouter');
 //helper function
 const { connectToDatabase } = require('./helpers/connection');
@@ -42,6 +44,8 @@ app.use('/api/v1/therapy', selectTherapyRouter);
 app.use('/api/v1/servey', serveyRouter);
 app.use('/api/v1/package', packageRouter);
 app.use('/api/v1/apointment', appointmentRouter);
+app.use('/api/v1/therapist', therapistRouter);
+//test api route
 app.use('/api/v1/meowimage', meowImageRouter);
 console.log("sdjfkhnkjhf");
 

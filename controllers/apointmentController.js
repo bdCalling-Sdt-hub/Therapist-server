@@ -36,7 +36,13 @@ const assignDoctor = async (req, res) => {
     } catch (error) {
         res.status(500).json(Response({ message: "Internal Server Error", type: "Appointment", status: "Internal Server Error", statusCode: 500 }));
     }
-}
+};
+
+const schedule = async (req, res) => {
+    const { date, time } = req.body;
+    const apointment = await Apointment.create({ userId: req.user._id, date, time });
+
+};
 
 module.exports = {
     getApointment,
