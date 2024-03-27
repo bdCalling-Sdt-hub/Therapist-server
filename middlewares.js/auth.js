@@ -2,6 +2,7 @@ const jwt = require('jsonwebtoken');
 const createError = require('http-errors');
 const Response = require('../helpers/response');
 const User = require('../models/User');
+const Therapist = require('../models/Therapist');
 
 const isValidUser = async (req, res, next) => {
     try {
@@ -32,7 +33,7 @@ const isValidUser = async (req, res, next) => {
             }
         }
 
-        const user = await User.findById(decodedData._id);
+        const user = await User.findById(decodedData._id) || Therapist.findById(decodedData._id);
 
         if (!user) {
             return next(createError(401, 'Unauthorized'));

@@ -12,6 +12,7 @@ const serveyRouter = require('./routes/serveyRouter');
 const packageRouter = require('./routes/PackageRouter');
 const appointmentRouter = require('./routes/apointmentRouter');
 const therapistRouter = require('./routes/therapistRouter');
+const sheiduleRouter = require('./routes/sheiduleRouter');
 // test api route
 const meowImageRouter = require('./routes/meowUploadRouter');
 //helper function
@@ -45,6 +46,7 @@ app.use('/api/v1/servey', serveyRouter);
 app.use('/api/v1/package', packageRouter);
 app.use('/api/v1/apointment', appointmentRouter);
 app.use('/api/v1/therapist', therapistRouter);
+app.use('/api/v1/sheidule', sheiduleRouter);
 //test api route
 app.use('/api/v1/meowimage', meowImageRouter);
 console.log("sdjfkhnkjhf");
