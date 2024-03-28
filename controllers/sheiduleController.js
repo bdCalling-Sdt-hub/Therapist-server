@@ -1,4 +1,5 @@
 const Response = require("../helpers/response");
+const Apointment = require("../models/Apointment");
 const Sheidule = require("../models/Sheidule");
 const Therapist = require("../models/Therapist");
 const User = require("../models/User");
@@ -58,16 +59,33 @@ const getSheidule = async (req, res) => {
 
 const assignTherapistToPatient = async (req, res) => {
     try {
+        console.log(req.body.patientId);
         const admin = await User.findById(req.body.userId);
         if (!admin) {
             return res.status(400).json(Response({ message: "Admin not found", type: "Admin", status: "Not Found", statusCode: 400 }))
         }
         if (!admin.isAdmin) {
-            res.status(401).json(Response({ message: "Unauthorized", type: "Admin", status: "Unauthorized", statusCode: 401 }))
+            return res.status(401).json(Response({ message: "Unauthorized", type: "Admin", status: "Unauthorized", statusCode: 401 }))
         }
-        console.log(admin);
-    } catch (error) {
+        const sheidules = await Sheidule.find();
 
+        const patient = await Apointment.findOne({ userId: req.body.patientId });
+
+        if (!patient) {
+            return res.status(400).json(Response({ message: "Patient not found", type: "Patient", status: "Not Found", statusCode: 400 }))
+        }
+
+        // Filter sheidules based on date match with patient's date
+        const matchedSheidules = sheidules.filter(sheidule => {
+            return sheidule.date.getTime() === patient.date.getTime();
+        });
+
+        // Now matchedSheidules contains only the schedules whose date matches the patient's date
+        res.status(200).json(Response({ message: "Sheidules have been fetched successfully", data: matchedSheidules, type: "Sheidule", status: "Success", statusCode: 200 }));
+
+    } catch (error) {
+        console.log(error)
+        res.status(500).json(Response({ message: error.message }));
     }
 };
 
