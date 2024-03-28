@@ -18,6 +18,10 @@ const Response = (response = {}) => {
         responseObject.data.token = response.token;
     }
 
+    if (response.pagination) {
+        responseObject.pagination = response.pagination;
+    }
+
     return responseObject;
 }
 
