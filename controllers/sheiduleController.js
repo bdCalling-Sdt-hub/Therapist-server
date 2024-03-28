@@ -1,6 +1,7 @@
 const Response = require("../helpers/response");
 const Sheidule = require("../models/Sheidule");
 const Therapist = require("../models/Therapist");
+const User = require("../models/User");
 
 const sheidule = async (req, res) => {
     try {
@@ -55,4 +56,19 @@ const getSheidule = async (req, res) => {
     };
 };
 
-module.exports = { sheidule, getSheidule };
+const assignTherapistToPatient = async (req, res) => {
+    try {
+        const admin = await User.findById(req.body.userId);
+        if (!admin) {
+            return res.status(400).json(Response({ message: "Admin not found", type: "Admin", status: "Not Found", statusCode: 400 }))
+        }
+        if (!admin.isAdmin) {
+            res.status(401).json(Response({ message: "Unauthorized", type: "Admin", status: "Unauthorized", statusCode: 401 }))
+        }
+        console.log(admin);
+    } catch (error) {
+
+    }
+};
+
+module.exports = { sheidule, getSheidule, assignTherapistToPatient };
