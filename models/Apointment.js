@@ -7,7 +7,7 @@ const apointmentSchema = new mongoose.Schema({
     time: { type: String, required: true },
     status: { type: String, required: false },
     paymentStatus: { type: String, required: false },
-    referTo: { type: String, required: false },
+    referTo: { type: mongoose.Schema.Types.ObjectId, required: false },
 },
     { timestamps: true },
 );

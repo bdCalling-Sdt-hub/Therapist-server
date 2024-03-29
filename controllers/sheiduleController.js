@@ -57,7 +57,7 @@ const getSheidule = async (req, res) => {
     };
 };
 
-const assignTherapistToPatient = async (req, res) => {
+const matchTherapistWithSheidule = async (req, res) => {
     try {
         console.log(req.body.patientId);
         const admin = await User.findById(req.body.userId);
@@ -89,4 +89,22 @@ const assignTherapistToPatient = async (req, res) => {
     }
 };
 
-module.exports = { sheidule, getSheidule, assignTherapistToPatient };
+const assignTherapistToPatient = async (req, res) => {
+    try {
+        const patientId = req.body.patientId;
+        const therapistId = req.params.therapistId;
+        const patient = await Apointment.findOne({ userId: patientId });
+        const therapist = await Therapist.findById(therapistId);
+        console.log(patient);
+        console.log(therapist);
+        if (!patient) {
+            return res.status(400).json(Response({ message: "Patient not found", type: "Patient", status: "Not Found", statusCode: 400 }))
+        }
+        patient.referTo = therapistId;
+        res.status(200).json(Response({ message: "Therapist has been assigned to the patient successfully", data: patient, type: "Patient", status: "Success", statusCode: 200 }));
+    } catch (error) {
+        res.status(500).json(Response({ message: error.message }));
+    }
+};
+
+module.exports = { sheidule, getSheidule, matchTherapistWithSheidule, assignTherapistToPatient };
