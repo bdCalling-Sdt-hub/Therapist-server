@@ -133,6 +133,6 @@ const apointmentDetailsForDoctors = async (req, res) => {
     } catch (error) {
         res.status(500).json(Response({ message: error.message }));
     }
-}
+};
 
 module.exports = { sheidule, getSheidule, matchTherapistWithSheidule, assignTherapistToPatient, apointmentDetailsForDoctors };
