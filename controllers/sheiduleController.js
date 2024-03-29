@@ -91,6 +91,14 @@ const matchTherapistWithSheidule = async (req, res) => {
 
 const assignTherapistToPatient = async (req, res) => {
     try {
+
+        const admin = await User.findById(req.body.userId);
+        if (!admin) {
+            return res.status(400).json(Response({ message: "Admin not found", type: "Admin", status: "Not Found", statusCode: 400 }))
+        }
+        if (!admin.isAdmin) {
+            return res.status(401).json(Response({ message: "Unauthorized", type: "Admin", status: "Unauthorized", statusCode: 401 }))
+        }
         const patientId = req.body.patientId;
         const therapistId = req.params.therapistId;
         const patient = await Apointment.findOne({ userId: patientId });
@@ -101,10 +109,30 @@ const assignTherapistToPatient = async (req, res) => {
             return res.status(400).json(Response({ message: "Patient not found", type: "Patient", status: "Not Found", statusCode: 400 }))
         }
         patient.referTo = therapistId;
+        await patient.save();
         res.status(200).json(Response({ message: "Therapist has been assigned to the patient successfully", data: patient, type: "Patient", status: "Success", statusCode: 200 }));
     } catch (error) {
         res.status(500).json(Response({ message: error.message }));
     }
 };
 
-module.exports = { sheidule, getSheidule, matchTherapistWithSheidule, assignTherapistToPatient };
+const apointmentDetailsForDoctors = async (req, res) => {
+    try {
+        console.log(req.body.userId);
+        const therapistId = req.body.userId
+        const therapist = await Therapist.findById(therapistId);
+        console.log(therapist)
+        if (!therapist) {
+            return res.status(400).json(Response({ message: "Therapist not found", type: "Therapist", status: "Not Found", statusCode: 400 }))
+        }
+        if (therapist._id === therapistId) {
+            return res.status(401).json(Response({ message: "Unauthorized", data: therapist, type: "Therapist", status: "Unauthorized", statusCode: 401 }))
+        }
+        const patient = await Apointment.find({ referTo: therapistId });
+        res.status(200).json(Response({ message: "Patient has been fetched successfully", data: patient, type: "Patient", status: "Success", statusCode: 200 }));
+    } catch (error) {
+        res.status(500).json(Response({ message: error.message }));
+    }
+}
+
+module.exports = { sheidule, getSheidule, matchTherapistWithSheidule, assignTherapistToPatient, apointmentDetailsForDoctors };
