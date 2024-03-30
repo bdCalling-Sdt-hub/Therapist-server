@@ -27,6 +27,18 @@ const socketIO = (io) => {
             console.log(`${getCurrentTime()} Client disconnected`);
         });
 
+        socket.on('message', (msg, callback) => {
+            //send message to specific user
+            io.emit(`new::${msg.id}`, msg);
+            //response back
+            callback(
+                {
+                    message: msg,
+                    type: "Message",
+                }
+            )
+        });
+
     });
 };
 
