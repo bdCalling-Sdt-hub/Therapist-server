@@ -101,6 +101,7 @@ const verifyCodeService = async ({ user, code }) => {
     try {
         if (user.oneTimeCode === code) {
             user.oneTimeCode = "Verified";
+            user.isVerified = true;
             await user.save();
 
             // Set a timeout to reset oneTimeCode to null after 3 minutes

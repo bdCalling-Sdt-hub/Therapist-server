@@ -68,6 +68,10 @@ const signIn = async (req, res, next) => {
             return res.status(401).json(Response({ statusCode: 401, message: 'You are blocked', status: "Failed" }));
         }
 
+        if (!user.isVerified && user.oneTimeCode !== "Verified") {
+            return res.status(401).json(Response({ statusCode: 401, message: 'You are not verified', status: "Failed" }));
+        }
+
         // Compare the provided password with the stored hashed password
         const isPasswordValid = await bcrypt.compare(password, user.password);
         console.log("---------------", isPasswordValid)
