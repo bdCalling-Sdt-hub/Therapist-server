@@ -5,7 +5,7 @@ const router = express.Router();
 const { mewoImageUpload } = require('../controllers/meowUplaodController');
 
 // Import the multer middleware
-const uploadMiddleware = require('../middlewares.js/meowUpload');
+const uploadMiddleware = require('../middlewares.js/multipleUpload');
 
 // Route for uploading multiple images from multiple fields
 router.post('/meow', uploadMiddleware, mewoImageUpload);

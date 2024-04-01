@@ -4,7 +4,7 @@ const createError = require('http-errors');
 
 const UPLOAD_DIR = process.env.UPLOAD_FOLDER || "public/images/users";
 const MAX_FILE_SIZE = Number(process.env.MAX_FILE_SIZE) || 5242880; // 5 MB
-const ALLOWED_FILE_TYPES = process.env.ALLOWED_FILE_TYPES || ["jpg", "jpeg", "png"];
+const ALLOWED_FILE_TYPES = process.env.ALLOWED_FILE_TYPES || ["jpg", "jpeg", "png", "pdf"];
 
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
@@ -32,8 +32,8 @@ const upload = multer({
 });
 
 module.exports = upload.fields([
-    { name: 'title1image', maxCount: 10 }, // Change the maxCount as per your requirement
-    { name: 'title2image', maxCount: 10 },  // Change the maxCount as per your requirement
-    { name: 'title3image', maxCount: 10 },  // Change the maxCount as per your requirement
+    { name: 'image', maxCount: 10 }, // Change the maxCount as per your requirement
+    { name: 'certificate', maxCount: 10 },  // Change the maxCount as per your requirement
+    { name: 'resume', maxCount: 10 },  // Change the maxCount as per your requirement
 ]);
 

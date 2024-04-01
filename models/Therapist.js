@@ -14,8 +14,9 @@ const therapistSchema = new mongoose.Schema({
             message: 'Please enter a valid Email'
         }
     },
-    resume: { type: String, required: false, default: null },
-    certificate: { type: String, required: false, default: null },
+    image: { type: Object, required: false, default: { publicFileURL: "images/users/user.png", path: "public\\images\\users\\user.png" } },
+    resume: { type: Object, required: false, default: null },
+    certificate: { type: Object, required: false, default: null },
     accepted: { type: Boolean, default: false },
     isBlocked: { type: Boolean, default: false },
     therapistType: { type: String, required: true, enum: ["Individual", "Couple Therapy", "Teen Therapy"], default: "Individual" },

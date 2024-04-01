@@ -7,13 +7,31 @@ const { userLogin } = require("../services/userService");
 const { createJSONWebToken } = require("../helpers/jsonWebToken");
 
 const apply = async (req, res) => {
-    const { name, email, password, resume, therapistType, certificate } = req.body;
-    const therapistExists = await Therapist.findOne({ email });
-    if (therapistExists) {
-        return res.status(400).json(Response({ message: "Email already exists", status: "Bad Request", statusCode: "400" }));
+    try {
+        const { name, email, password, therapistType } = req.body;
+        const image = req.files['image'];
+        const certificate = req.files['certificate'];
+        const resume = req.files['resume'];
+
+        console.log("sffkjdf")
+        const therapistExists = await Therapist.findOne({ email });
+        if (therapistExists) {
+            return res.status(400).json(Response({ message: "Email already exists", status: "Bad Request", statusCode: "400" }));
+        }
+        const therapist = await Therapist.create({
+            name,
+            resume,
+            therapistType,
+            certificate,
+            email,
+            password,
+            image,
+        });
+        res.status(201).json(Response({ message: "Apply as a therapist is successfully", status: "Created", statusCode: "201", data: therapist }));
+    } catch (error) {
+        console.log(error);
+        res.status(500).json(Response({ message: "Internal server error", status: "Internal Server Error", statusCode: "500" }));
     }
-    const therapist = await Therapist.create({ name, resume, therapistType, certificate, email, password });
-    res.status(201).json(Response({ message: "Apply as a therapist is successfully", status: "Created", statusCode: "201", data: therapist }));
 };
 
 //Sign in user

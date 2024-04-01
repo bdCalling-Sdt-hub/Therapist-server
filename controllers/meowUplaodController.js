@@ -1,8 +1,10 @@
 const mewoImageUpload = async (req, res) => {
     try {
         // Access uploaded files
-        const title1Images = req.files['title1image'];
-        const title2Images = req.files['title2image'];
+        const image = req.files['image'];
+        const certificate = req.files['certificate'];
+        const resume = req.files['resume'];
+        console.log(image);
 
         // Process uploaded files as needed
         // For example, save them to a database or file system

@@ -3,6 +3,7 @@ const Response = require("../helpers/response");
 const User = require("../models/User");
 const bcrypt = require('bcryptjs');
 const { createJSONWebToken } = require('../helpers/jsonWebToken');
+const { deleteImage } = require("../helpers/deleteImage");
 
 //sign up user
 const signUp = async (req, res) => {
@@ -22,7 +23,8 @@ const signUp = async (req, res) => {
 
         if (!password) {
             return res.status(400).json(Response({ message: "Password is required" }));
-        }
+        };
+
         const user = await User.findOne({ email });
         if (user) {
             return res.status(400).json(Response({ message: "User already exists" }));
@@ -199,11 +201,74 @@ const changePassword = async (req, res) => {
     }
 };
 
+const updateProfile = async (req, res) => {
+    try {
+        const { name, email } = req.body;
+        const image = req.file;
+
+        console.log("image", image);
+        console.log("name", name);
+        console.log("email", email);
+
+        // Check if userId is provided and valid
+        if (!req.body.userId) {
+            return res.status(400).json({ message: "userId is required" });
+        }
+
+        // Find the user by userId
+        const user = await User.findById(req.body.userId);
+
+        // Check if user exists
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        // Update user fields if provided
+        if (name) {
+            user.name = name;
+        }
+        if (email) {
+            user.email = email;
+        }
+
+        // Handle image update
+        if (image) {
+            // Delete previous image if it exists
+            if (user.image && user.image.path) {
+                deleteImage(user.image.path);
+            }
+            user.image = image;
+        }
+
+        // Save the updated user
+        await user.save();
+
+        // Return success response
+        return res.status(200).json({ message: "Profile updated successfully", user });
+
+    } catch (error) {
+        console.error(error);
+
+        // Handle specific types of errors
+        if (error.name === 'ValidationError') {
+            return res.status(400).json({ message: error.message });
+        } else if (error.name === 'MongoError' && error.code === 11000) {
+            return res.status(400).json({ message: "Duplicate key error" });
+        }
+
+        // For other errors, return a generic internal server error message
+        return res.status(500).json({ message: "Internal server error" });
+    }
+}
+
+
+
 module.exports = {
     signUp,
     signIn,
     forgotPassword,
     verifyCode,
     changePassword,
-    setPassword
+    setPassword,
+    updateProfile
 };

@@ -6,11 +6,12 @@ const { apply, acceptTherapistRequest, getTherapist, signIn } = require('../cont
 
 //import middleware
 const upload = require('../middlewares.js/fileUpload');
+const uploadMiddleware = require('../middlewares.js/multipleUpload');
 const { isValidUser } = require('../middlewares.js/auth');
 
 console.log("heeee")
 // routes
-router.post('/apply', apply);
+router.post('/apply', uploadMiddleware, apply);
 router.post('/action/:therapistId', isValidUser, acceptTherapistRequest);
 router.get('/all', isValidUser, getTherapist);
 router.get('/:therapistId', isValidUser, getTherapist);
