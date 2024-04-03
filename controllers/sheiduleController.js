@@ -14,9 +14,9 @@ const sheidule = async (req, res) => {
         };
         if (therapist._id.toString() !== therapistId) {
             return res.status(200).json(Response({ message: "Unauthorized", type: "Therapist", status: "Unauthorized", statusCode: 400 }))
-        }
+        };
         const sheidule = await Sheidule.create({ date, therapistId });
-        res.status(201).json(Response({ message: "Sheidule has been created successfully", data: sheidule, type: "Therapist", status: "Success", statusCode: 201 }))
+        res.status(201).json(Response({ message: "Sheidule has been created successfully", data: sheidule, type: "Therapist", status: "Success", statusCode: 201 }));
     } catch (error) {
         res.status(500).json(Response({ message: error.message }))
     };
@@ -135,4 +135,32 @@ const apointmentDetailsForDoctors = async (req, res) => {
     }
 };
 
-module.exports = { sheidule, getSheidule, matchTherapistWithSheidule, assignTherapistToPatient, apointmentDetailsForDoctors };
+const createSheidule = async (req, res) => {
+    try {
+        const { sheidule } = req.body;
+        const adminId = req.body.userId;
+        const admin = await User.findById(adminId);
+        if (sheidule.date.length < 1) {
+            return res.status(400).json(Response({ message: "Date is required", type: "Sheidule", status: "Bad Request", statusCode: 400 }))
+        };
+        if (!admin) {
+            return res.status(400).json(Response({ message: "Admin not found", type: "Admin", status: "Not Found", statusCode: 400 }))
+        }
+        if (!admin.isAdmin) {
+            return res.status(401).json(Response({ message: "Unauthorized", type: "Admin", status: "Unauthorized", statusCode: 401 }))
+        }
+        const newsSheidule = await Sheidule.create(sheidule);
+        res.status(201).json(Response({ message: "Sheidule has been created successfully", data: newsSheidule, type: "Sheidule", status: "Success", statusCode: 201 }))
+    } catch (error) {
+        res.status(500).json(Response({ message: error.message }));
+    }
+};
+
+module.exports = {
+    sheidule,
+    getSheidule,
+    matchTherapistWithSheidule,
+    assignTherapistToPatient,
+    apointmentDetailsForDoctors,
+    createSheidule
+};

@@ -13,10 +13,9 @@ const apply = async (req, res) => {
         const certificate = req.files['certificate'];
         const resume = req.files['resume'];
 
-        console.log("sffkjdf")
         const therapistExists = await Therapist.findOne({ email });
         if (therapistExists) {
-            return res.status(400).json(Response({ message: "Email already exists", status: "Bad Request", statusCode: "400" }));
+            return res.status(400).json(Response({ message: "Email already exists", status: "Bad Request", statusCode: 400 }));
         }
         const therapist = await Therapist.create({
             name,
@@ -29,7 +28,7 @@ const apply = async (req, res) => {
         });
         res.status(201).json(Response({ message: "Apply as a therapist is successfully", status: "Created", statusCode: "201", data: therapist }));
     } catch (error) {
-        console.log(error);
+        console.log(error.message);
         res.status(500).json(Response({ message: "Internal server error", status: "Internal Server Error", statusCode: "500" }));
     }
 };
