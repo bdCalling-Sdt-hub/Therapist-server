@@ -14,6 +14,7 @@ const therapistSchema = new mongoose.Schema({
             message: 'Please enter a valid Email'
         }
     },
+    role: { type: String, required: true, enum: ["Patient", "Therapist", "Admin"], default: "Therapist" },
     image: { type: Object, required: false, default: { publicFileURL: "images/users/user.png", path: "public\\images\\users\\user.png" } },
     resume: { type: Object, required: false, default: null },
     certificate: { type: Object, required: false, default: null },
@@ -24,6 +25,8 @@ const therapistSchema = new mongoose.Schema({
         type: String, required: [true, "Password is required"], minlength: 3,
         set: (v) => bcrypt.hashSync(v, bcrypt.genSaltSync(10))
     },
+    isVerified: { type: Boolean, default: false },
+    oneTimeCode: { type: String, required: false, default: null },
 }, {
     toJSON: {
         transform(doc, ret) {

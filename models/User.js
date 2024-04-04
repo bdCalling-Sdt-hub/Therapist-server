@@ -14,6 +14,7 @@ const userSchema = new mongoose.Schema({
             message: 'Please enter a valid Email'
         }
     },
+    role: { type: String, required: true, enum: ["Patient", "Therapist", "Admin"], default: "Patient" },
     password: {
         type: String, required: [true, "Password is required"], minlength: 3,
         set: (v) => bcrypt.hashSync(v, bcrypt.genSaltSync(10))

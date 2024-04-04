@@ -103,6 +103,9 @@ const verifyCodeService = async ({ user, code }) => {
             user.oneTimeCode = "Verified";
             user.isVerified = true;
             await user.save();
+            const expiresInOneYear = 365 * 24 * 60 * 60; // seconds in 1 year
+            const accessToken = createJSONWebToken({ _id: user._id, email: user.email, role: user.role }, process.env.JWT_SECRET_KEY, expiresInOneYear);
+            console.log(accessToken);
 
             // Set a timeout to reset oneTimeCode to null after 3 minutes
             setTimeout(async () => {
@@ -111,7 +114,7 @@ const verifyCodeService = async ({ user, code }) => {
                 console.log("oneTimeCode reset to null after 3 minutes");
             }, 3 * 60 * 1000); // 3 minutes in milliseconds
 
-            return true;
+            return accessToken;
         } else {
             return false;
         }

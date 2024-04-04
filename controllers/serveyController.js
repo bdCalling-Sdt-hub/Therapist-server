@@ -4,42 +4,45 @@ const SurveyAnswer = require("../models/ServeyAnswer")
 
 const createServey = async (req, res) => {
     try {
-        const { question, serveyType, answers, correctAnswers } = req.body;
-        console.log(answers)
-
-        const createServey = await Survey.create({
-            question: question,
-            serveyType: serveyType
+        const { question, options, questionType, answerType } = req.body;
+        const survey = await Survey.create({
+            question,
+            options,
+            questionType,
+            answerType
         });
-
-
-
-        const createAnswer = await SurveyAnswer.create({
-            answers: answers,
-            correctAnswers: correctAnswers,
-            questionId: createServey._id,
-        });
-
-        const data = {
-            createServey,
-            createAnswer
-        };
-
-        res.status(201).json(Response({ data: data }));
+        res.status(201).json(Response({ data: survey, status: "Created", statusCode: 201, message: "Servey created successfully" }));
     } catch (error) {
         console.log(error.message)
         res.status(500).json(Response({ error: error }));
     }
 };
 
-const getServey = async (req, res) => {
+const getSurvey = async (req, res) => {
     try {
-        const getServey = await Survey.find();
-        res.status(200).json(Response({ data: getServey }));
+        const questionType = req.query.questionType || "";
+        const page = Number(req.query.page) || 1;
+        const limit = Number(req.query.limit) || 10;
+
+        const searchRegExp = new RegExp(".*" + questionType + ".*", 'i');
+
+        const filter = {
+            $or: [{ questionType: { $regex: searchRegExp } }]
+        };
+
+        const surveys = await Survey.find(filter);
+
+        const responseData = {
+            data: surveys,
+            type: questionType
+        };
+
+        res.status(200).json(Response(responseData));
     } catch (error) {
         res.status(500).json(Response({ error: error }));
     }
 };
+
 
 const getServeyAnswer = async (req, res) => {
     try {
@@ -128,7 +131,7 @@ const serveyAnswer = async (req, res) => {
 
 module.exports = {
     createServey,
-    getServey,
+    getSurvey,
     getServeyAnswer,
     getServeyWithoutAnswer
 }

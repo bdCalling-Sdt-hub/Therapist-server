@@ -22,6 +22,10 @@ const Response = (response = {}) => {
         responseObject.pagination = response.pagination;
     }
 
+    if (response.type) {
+        responseObject.data.type = response.type;
+    }
+
     return responseObject;
 }
 

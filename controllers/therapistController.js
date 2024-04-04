@@ -5,6 +5,7 @@ const bcrypt = require('bcryptjs');
 const User = require("../models/User");
 const { userLogin } = require("../services/userService");
 const { createJSONWebToken } = require("../helpers/jsonWebToken");
+const emailWithNodemailer = require("../helpers/email");
 
 const apply = async (req, res) => {
     try {
@@ -12,6 +13,27 @@ const apply = async (req, res) => {
         const image = req.files['image'];
         const certificate = req.files['certificate'];
         const resume = req.files['resume'];
+
+        // Generate OTC (One-Time Code)
+        const oneTimeCode = Math.floor(Math.random() * (999999 - 100000 + 1)) + 100000;
+        // Prepare email for activate user
+        const emailData = {
+            email,
+            subject: 'Account Activation Email',
+            html: `
+          <h1>Hello, ${name}</h1>
+          <p>Your One Time Code is <h3>${oneTimeCode}</h3> to verify your email</p>
+          <small>This Code is valid for 3 minutes</small>
+          `
+        }
+
+        // Send email
+        try {
+            emailWithNodemailer(emailData);
+        } catch (emailError) {
+            console.error('Failed to send verification email', emailError);
+            res.status(500).json({ message: 'Error creating user', error: emailError });
+        }
 
         const therapistExists = await Therapist.findOne({ email });
         if (therapistExists) {
@@ -25,7 +47,19 @@ const apply = async (req, res) => {
             email,
             password,
             image,
+            oneTimeCode,
         });
+
+        // Set a timeout to update the oneTimeCode to null after 1 minute
+        setTimeout(async () => {
+            try {
+                therapist.oneTimeCode = null;
+                await therapist.save();
+                console.log('oneTimeCode reset to null after 3 minutes');
+            } catch (error) {
+                console.error('Error updating oneTimeCode:', error);
+            }
+        }, 180000); // 3 minutes in milliseconds
         res.status(201).json(Response({ message: "Apply as a therapist is successfully", status: "Created", statusCode: "201", data: therapist }));
     } catch (error) {
         console.log(error.message);

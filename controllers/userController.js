@@ -4,6 +4,7 @@ const User = require("../models/User");
 const bcrypt = require('bcryptjs');
 const { createJSONWebToken } = require('../helpers/jsonWebToken');
 const { deleteImage } = require("../helpers/deleteImage");
+const Therapist = require("../models/Therapist");
 
 //sign up user
 const signUp = async (req, res) => {
@@ -126,16 +127,30 @@ const verifyCode = async (req, res) => {
             return res.status(404).json(Response({ statusCode: 404, message: 'User not found', status: "Failed" }));
         }
 
-        const user = await User.findOne({ email });
+        const [userResult, therapistResult] = await Promise.all([
+            User.findOne({ email }),
+            Therapist.findOne({ email })
+        ]);
+
+        const user = userResult || therapistResult;
 
         if (!user) {
             console.log("user")
             return res.status(404).json(Response({ statusCode: 404, message: 'User not found', status: "Failed" }));
         }
+        console.log("user", user, code)
+        // await verifyCodeService({ user, code })
+        let accessToken;
+        if (user.oneTimeCode === code) {
+            user.oneTimeCode = "Verified";
+            user.isVerified = true;
+            await user.save();
+            const expiresInOneYear = 365 * 24 * 60 * 60; // seconds in 1 year
+            accessToken = createJSONWebToken({ _id: user._id, email: user.email, role: user.role }, process.env.JWT_SECRET_KEY, expiresInOneYear);
+            console.log(accessToken);
+        }
 
-        await verifyCodeService({ user, code })
-
-        res.status(200).json(Response({ statusCode: 200, message: 'User verified successfully', status: "OK" }));
+        res.status(200).json(Response({ statusCode: 200, message: 'User verified successfully', status: "OK", token: accessToken, data: user }));
 
     } catch (error) {
         console.error(error);
