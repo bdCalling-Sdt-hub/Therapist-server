@@ -27,6 +27,7 @@ const userSchema = new mongoose.Schema({
     image: { type: Object, required: false, default: { publicFileURL: "images/users/user.png", path: "public\\images\\users\\user.png" } },
     subscription: { type: String, required: true, enum: ["free", "standard", "premium"], default: "free" },
     oneTimeCode: { type: String, required: false, default: null },
+    answer: { type: Boolean, required: false, default: false },
 }, {
     toJSON: {
         transform(doc, ret) {

@@ -95,6 +95,19 @@ const signIn = async (req, res, next) => {
     }
 };
 
+const profile = async (req, res) => {
+    try {
+        const user = await User.findById(req.user._id);
+        if (!user) {
+            return res.status(404).json(Response({ statusCode: 404, message: 'User not found', status: "Failed" }));
+        }
+        res.status(200).json(Response({ statusCode: 200, message: 'User found', status: "OK", data: user }));
+    } catch (error) {
+        console.error(error);
+        res.status(500).json(Response({ statusCode: 500, message: 'Internal server error', status: "Failed" }));
+    }
+};
+
 const forgotPassword = async (req, res) => {
     try {
         const { email } = req.body;
@@ -274,8 +287,7 @@ const updateProfile = async (req, res) => {
         // For other errors, return a generic internal server error message
         return res.status(500).json({ message: "Internal server error" });
     }
-}
-
+};
 
 
 module.exports = {
@@ -285,5 +297,6 @@ module.exports = {
     verifyCode,
     changePassword,
     setPassword,
-    updateProfile
+    updateProfile,
+    profile
 };
