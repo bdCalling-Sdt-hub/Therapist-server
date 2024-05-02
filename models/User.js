@@ -19,6 +19,9 @@ const userSchema = new mongoose.Schema({
         type: String, required: [true, "Password is required"], minlength: 3,
         set: (v) => bcrypt.hashSync(v, bcrypt.genSaltSync(10))
     },
+    phone: { type: String, required: false },
+    dateOfBirth: { type: String, required: false },
+    countryCode: { type: String, required: false },
     privacyPolicyAccepted: { type: Boolean, default: false, required: true },
     isAdmin: { type: Boolean, default: false },
     isVerified: { type: Boolean, default: false },

@@ -9,7 +9,7 @@ const Therapist = require("../models/Therapist");
 //sign up user
 const signUp = async (req, res) => {
     try {
-        const { name, email, password } = req.body;
+        const { name, email, password, countryCode, phone, dateOfBirth } = req.body;
         const image = req.file;
 
 
@@ -35,7 +35,10 @@ const signUp = async (req, res) => {
             name,
             email,
             password,
-            image
+            image,
+            countryCode,
+            phone,
+            dateOfBirth
         }
 
         console.log(userDetails)
@@ -97,7 +100,7 @@ const signIn = async (req, res, next) => {
 
 const profile = async (req, res) => {
     try {
-        const user = await User.findById(req.user._id);
+        const user = await User.findById(req.body.userId);
         if (!user) {
             return res.status(404).json(Response({ statusCode: 404, message: 'User not found', status: "Failed" }));
         }
@@ -231,12 +234,12 @@ const changePassword = async (req, res) => {
 
 const updateProfile = async (req, res) => {
     try {
-        const { name, email } = req.body;
+        const { name, email, phone, dateOfBirth, countryCode } = req.body;
         const image = req.file;
 
         console.log("image", image);
         console.log("name", name);
-        console.log("email", email);
+        console.log("email", countryCode);
 
         // Check if userId is provided and valid
         if (!req.body.userId) {
@@ -259,6 +262,16 @@ const updateProfile = async (req, res) => {
             user.email = email;
         }
 
+        if (phone) {
+            user.phone = phone;
+        }
+        if (countryCode) {
+            user.countryCode = countryCode;
+        }
+        if (dateOfBirth) {
+            user.dateOfBirth = dateOfBirth;
+        }
+
         // Handle image update
         if (image) {
             // Delete previous image if it exists
@@ -267,6 +280,7 @@ const updateProfile = async (req, res) => {
             }
             user.image = image;
         }
+
 
         // Save the updated user
         await user.save();

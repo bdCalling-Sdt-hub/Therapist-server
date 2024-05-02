@@ -9,7 +9,7 @@ const emailWithNodemailer = require("../helpers/email");
 
 const apply = async (req, res) => {
     try {
-        const { name, email, password, therapistType } = req.body;
+        const { name, email, password, therapistType, dateOfBirth, phone, countryCode } = req.body;
         const image = req.files['image'];
         const certificate = req.files['certificate'];
         const resume = req.files['resume'];
@@ -48,6 +48,9 @@ const apply = async (req, res) => {
             password,
             image,
             oneTimeCode,
+            dateOfBirth,
+            phone,
+            countryCode
         });
 
         // Set a timeout to update the oneTimeCode to null after 1 minute
@@ -60,10 +63,10 @@ const apply = async (req, res) => {
                 console.error('Error updating oneTimeCode:', error);
             }
         }, 180000); // 3 minutes in milliseconds
-        res.status(201).json(Response({ message: "Apply as a therapist is successfully", status: "Created", statusCode: "201", data: therapist }));
+        res.status(201).json(Response({ message: "Apply as a therapist is successfully", status: "Created", statusCode: 201, data: therapist }));
     } catch (error) {
         console.log(error.message);
-        res.status(500).json(Response({ message: "Internal server error", status: "Internal Server Error", statusCode: "500" }));
+        res.status(500).json(Response({ message: "Internal server error", status: "Internal Server Error", statusCode: 500 }));
     }
 };
 
@@ -109,6 +112,21 @@ const signIn = async (req, res, next) => {
     }
 };
 
+const therapistProfile = async (req, res) => {
+    console.log("req.body.userId", req.body.userId)
+    try {
+        const therapist = await Therapist.findById(req.body.userId);
+        console.log("-------------", therapist);
+        if (!therapist) {
+            return res.status(404).json(Response({ statusCode: 404, message: 'User not found', status: "Failed" }));
+        }
+        res.status(200).json(Response({ statusCode: 200, message: 'Therapist found', status: "OK", data: therapist }));
+    } catch (error) {
+        console.error(error);
+        res.status(500).json(Response({ statusCode: 500, message: 'Internal server error', status: "Failed" }));
+    }
+};
+
 const acceptTherapistRequest = async (req, res) => {
     try {
         const { therapistId } = req.params;
@@ -141,6 +159,7 @@ const acceptTherapistRequest = async (req, res) => {
 };
 
 const getTherapist = async (req, res) => {
+    console.log("get therapist");
     try {
         const therapist = await Therapist.find();
         res.status(200).json(Response({ message: "Therapist found successfully", status: "OK", statusCode: "200", data: therapist }));
@@ -158,11 +177,55 @@ const getSingleUser = async (req, res) => {
     }
 };
 
+const updateTherapist = async (req, res) => {
+    try {
+        const { name, email, resume, certificate, password, therapistType, dateOfBirth, phone, countryCode } = req.body;
+        // Check if userId is provided and valid
+        if (!req.body.userId) {
+            return res.status(400).json({ message: "Therapist ID is required" });
+        }
+
+        // Find the therapist by userId
+        const therapist = await Therapist.findById(req.body.userId);
+
+        // Check if therapist exists
+        if (!therapist) {
+            return res.status(404).json({ message: "Therapist not found" });
+        };
+
+        if (name) {
+            therapist.name = name;
+        };
+        if (email) {
+            therapist.email = email;
+        };
+        if (therapistType) {
+            therapist.therapistType = therapistType;
+        }
+        if (dateOfBirth) {
+            therapist.dateOfBirth = dateOfBirth;
+        }
+        if (phone) {
+            therapist.phone = phone;
+        };
+        if (countryCode) {
+            therapist.countryCode = countryCode;
+        };
+
+        res.status(200).json(Response({ message: "Therapist updated", statusCode: 200, status: "Updated" }))
+
+    } catch (error) {
+        res.status(500).json(Response({ message: "Error updating Therapist", statusCode: 500, status: "Error" }))
+    }
+};
+
 module.exports = {
     apply,
     acceptTherapistRequest,
     getTherapist,
     getSingleUser,
     getSingleUser,
-    signIn
+    signIn,
+    therapistProfile,
+    updateTherapist
 }

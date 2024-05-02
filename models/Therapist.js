@@ -14,6 +14,9 @@ const therapistSchema = new mongoose.Schema({
             message: 'Please enter a valid Email'
         }
     },
+    phone: { type: String, required: false },
+    dateOfBirth: { type: String, required: false },
+    countryCode: { type: String, required: false },
     role: { type: String, required: true, enum: ["Patient", "Therapist", "Admin"], default: "Therapist" },
     image: { type: Object, required: false, default: { publicFileURL: "images/users/user.png", path: "public\\images\\users\\user.png" } },
     resume: { type: Object, required: false, default: null },

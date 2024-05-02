@@ -9,6 +9,6 @@ const upload = require('../middlewares.js/fileUpload');
 const { isValidUser } = require('../middlewares.js/auth');
 
 // routes
-router.post('/', answer);
+router.post('/', isValidUser, answer);
 
 module.exports = router;
