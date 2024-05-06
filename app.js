@@ -16,6 +16,7 @@ const sheiduleRouter = require('./routes/sheiduleRouter');
 const timeSheiduleRouter = require('./routes/timeSceiduleRouter');
 const answerRouter = require('./routes/answerRouter');
 const subscriptionPlanRouter = require('./routes/subscriptionPlanRouter');
+const messageRoouter = require('./routes/messageRouter');
 // test api route
 const multipleImageRouter = require('./routes/multipleUploadRouter');
 //helper function
@@ -53,6 +54,7 @@ app.use('/api/v1/sheidule', sheiduleRouter);
 app.use('/api/v1/time-sheidule', timeSheiduleRouter);
 app.use('/api/v1/answer', answerRouter);
 app.use('/api/v1/subscription', subscriptionPlanRouter);
+app.use('/api/v1/chat', messageRoouter);
 //test api route
 app.use('/api/v1/meowimage', multipleImageRouter);
 console.log("sdjfkhnkjhf");

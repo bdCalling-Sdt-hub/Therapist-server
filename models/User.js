@@ -27,7 +27,7 @@ const userSchema = new mongoose.Schema({
     isVerified: { type: Boolean, default: false },
     isDeleted: { type: Boolean, default: false },
     isBlocked: { type: Boolean, default: false },
-    image: { type: Object, required: false, default: { publicFileURL: "images/users/user.png", path: "public\\images\\users\\user.png" } },
+    image: { type: Object, required: false, default: { publicFileURL: "images/defaultImage/user.png", path: "public\\images\\defaultImage\\user.png" } },
     subscription: { type: String, required: true, enum: ["free", "standard", "premium"], default: "free" },
     oneTimeCode: { type: String, required: false, default: null },
     answer: { type: Boolean, required: false, default: false },

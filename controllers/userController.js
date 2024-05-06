@@ -11,6 +11,7 @@ const signUp = async (req, res) => {
     try {
         const { name, email, password, countryCode, phone, dateOfBirth } = req.body;
         const image = req.file;
+        console.log("image-----", image)
 
 
         // Validate request body
@@ -38,7 +39,7 @@ const signUp = async (req, res) => {
             image,
             countryCode,
             phone,
-            dateOfBirth
+            // dateOfBirth
         }
 
         console.log(userDetails)
@@ -236,6 +237,14 @@ const updateProfile = async (req, res) => {
     try {
         const { name, email, phone, dateOfBirth, countryCode } = req.body;
         const image = req.file;
+        console.log("image", image);
+        let modifiedImage;
+        if (image) {
+            modifiedImage = {
+                publicFileURL: image.path,
+                path: image.path,
+            }
+        }
 
         console.log("image", image);
         console.log("name", name);
@@ -278,7 +287,7 @@ const updateProfile = async (req, res) => {
             if (user.image && user.image.path) {
                 deleteImage(user.image.path);
             }
-            user.image = image;
+            user.image = modifiedImage;
         }
 
 

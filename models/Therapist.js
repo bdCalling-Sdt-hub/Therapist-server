@@ -18,7 +18,7 @@ const therapistSchema = new mongoose.Schema({
     dateOfBirth: { type: String, required: false },
     countryCode: { type: String, required: false },
     role: { type: String, required: true, enum: ["Patient", "Therapist", "Admin"], default: "Therapist" },
-    image: { type: Object, required: false, default: { publicFileURL: "images/users/user.png", path: "public\\images\\users\\user.png" } },
+    image: { type: Object, required: false, default: { publicFileURL: "images/defaultImage/user.png", path: "public\\images\\defaultImage\\user.png" } },
     resume: { type: Object, required: false, default: null },
     certificate: { type: Object, required: false, default: null },
     accepted: { type: Boolean, default: false },

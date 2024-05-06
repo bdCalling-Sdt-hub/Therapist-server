@@ -17,7 +17,7 @@ router.post('/action/:therapistId', isValidUser, acceptTherapistRequest);
 router.get('/all', isValidUser, getTherapist);
 router.get('/:therapistId', isValidUser, getTherapist);
 router.post('/sign-in', signIn);
-router.post('/update', isValidUser, updateTherapist);
+router.post('/update', upload.single("image"), isValidUser, updateTherapist);
 
 
 

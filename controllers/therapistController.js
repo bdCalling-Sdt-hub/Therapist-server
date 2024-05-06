@@ -6,6 +6,7 @@ const User = require("../models/User");
 const { userLogin } = require("../services/userService");
 const { createJSONWebToken } = require("../helpers/jsonWebToken");
 const emailWithNodemailer = require("../helpers/email");
+const { deleteImage } = require("../helpers/deleteImage");
 
 const apply = async (req, res) => {
     try {
@@ -179,7 +180,18 @@ const getSingleUser = async (req, res) => {
 
 const updateTherapist = async (req, res) => {
     try {
-        const { name, email, resume, certificate, password, therapistType, dateOfBirth, phone, countryCode } = req.body;
+        const { name, email, therapistType, dateOfBirth, phone, countryCode } = req.body;
+        console.log("dateOfBirth", dateOfBirth);
+        const image = req.file;
+        console.log("image", image);
+        let modifiedImage;
+        if (image) {
+            modifiedImage = {
+                publicFileURL: image.path,
+                path: image.path,
+            }
+        }
+        console.log("modifiedImage", modifiedImage);
         // Check if userId is provided and valid
         if (!req.body.userId) {
             return res.status(400).json({ message: "Therapist ID is required" });
@@ -211,10 +223,20 @@ const updateTherapist = async (req, res) => {
         if (countryCode) {
             therapist.countryCode = countryCode;
         };
-
+        console.log("therapist", therapist.image);
+        // Handle image update
+        if (image) {
+            // Delete previous image if it exists
+            if (therapist.image && therapist.image.path) {
+                deleteImage(therapist.image.path);
+            }
+            therapist.image = modifiedImage;
+            await therapist.save();
+        }
         res.status(200).json(Response({ message: "Therapist updated", statusCode: 200, status: "Updated" }))
 
     } catch (error) {
+        console.log(error.message);
         res.status(500).json(Response({ message: "Error updating Therapist", statusCode: 500, status: "Error" }))
     }
 };

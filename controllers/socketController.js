@@ -5,7 +5,7 @@ const { Server } = require('socket.io');
 
 const app = require('../app');
 const { connectToDatabase } = require('../helpers/connection');
-const { getCurrentTime } = require('./messageController');
+const { getCurrentTime, saveMessage } = require('./messageController');
 const server = createServer(app);
 
 const io = new Server(server, {
@@ -29,7 +29,12 @@ const socketIO = (io) => {
 
         socket.on('message', (msg, callback) => {
             //send message to specific user
-            io.emit(`new::${msg.id}`, msg);
+            io.emit(`new::${msg.chatId}`, msg);
+            console.log(msg);
+
+            // save message to database and call a function
+            saveMessage(msg)
+
             //response back
             callback(
                 {

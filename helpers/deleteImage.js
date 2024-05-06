@@ -13,7 +13,7 @@ const deleteImage = async (imagePath) => {
                 }
             })
         }
-    })
+    });
 };
 
 module.exports = { deleteImage };

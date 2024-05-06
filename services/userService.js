@@ -8,6 +8,7 @@ const userRegister = async (userDetails) => {
     try {
         // Business logic for user registration
         console.log("Received user details:", userDetails); // Remove the { userDetails }
+        console.log("Received user details:", userDetails.modifiedImage); // Remove the { userDetails }
         let { email, name } = userDetails;
         // Generate OTC (One-Time Code)
         const oneTimeCode = Math.floor(Math.random() * (999999 - 100000 + 1)) + 100000;
@@ -42,7 +43,7 @@ const userRegister = async (userDetails) => {
             }
         }, 180000); // 3 minutes in milliseconds
     } catch (error) {
-        console.error("Error in userRegister service:", error);
+        console.error("Error in userRegister service:", error.message);
         throw new Error("Error occurred while registering user");
     }
 };
