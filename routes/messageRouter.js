@@ -1,5 +1,6 @@
 const express = require('express');
 const { getUserSpecificChat } = require('../controllers/messageController');
+const { isValidUser } = require('../middlewares.js/auth');
 const router = express.Router();
 
 //import controllers
@@ -8,6 +9,6 @@ const router = express.Router();
 //Import helper functions
 
 // routes
-router.get('/:chatId', getUserSpecificChat);
+router.get('/:receiverId', isValidUser, getUserSpecificChat);
 
 module.exports = router;

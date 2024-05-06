@@ -21,15 +21,41 @@ const saveMessage = (msg) => {
     });
 };
 
+// const getUserSpecificChat = async (req, res) => {
+//     try {
+//         // const chatId = req.params.chatId;
+//         const receiverId = req.params.receiverId;
+//         const senderId = req.body.userId;
+//         const messages = await Message.find({ chatId: chatId });
+//         console.log(messages);
+//         res.status(200).json(Response({ messages: "Message get succesfully", statusCode: 200, status: "Okay", data: messages }));
+//     } catch (error) {
+//         res.status(500).json({ message: error.message });
+//     }
+// };
+
 const getUserSpecificChat = async (req, res) => {
     try {
-        const chatId = req.params.chatId;
-        const messages = await Message.find({ chatId: chatId });
-        console.log(messages);
-        res.status(200).json(Response({ messages: "Message get succesfully", statusCode: 200, status: "Okay", data: messages }));
+        const receiverId = req.params.receiverId;
+        const senderId = req.body.userId;
+        console.log(receiverId, senderId);
+        const messages = await Message.find({
+            $or: [
+                { senderId: senderId, receiverId: receiverId },
+                { senderId: receiverId, receiverId: senderId }
+            ]
+        });
+
+        res.status(200).json({
+            messages: messages,
+            statusCode: 200,
+            status: "Okay",
+            message: "Messages retrieved successfully"
+        });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
 };
+
 
 module.exports = { getCurrentTime, saveMessage, getUserSpecificChat };
