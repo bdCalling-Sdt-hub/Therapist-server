@@ -1,4 +1,6 @@
+const { response } = require("../app");
 const Response = require("../helpers/response");
+const Chat = require("../models/Chat");
 const Message = require("../models/Message");
 
 //Timestamp function for socket
@@ -18,6 +20,13 @@ const saveMessage = (msg) => {
         receiverId: msg.receiverId,
         chatId: msg.chatId,
         sendTime: getCurrentTime()
+    });
+};
+
+const createChat = async (msg) => {
+    Chat.create({
+        senderId: msg.senderId,
+        receiverId: msg.receiverId
     });
 };
 
@@ -46,16 +55,40 @@ const getUserSpecificChat = async (req, res) => {
             ]
         });
 
-        res.status(200).json({
-            messages: messages,
+        res.status(200).json(Response({
+            data: messages,
             statusCode: 200,
             status: "Okay",
             message: "Messages retrieved successfully"
-        });
+        }));
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+const getChatList = async (req, res) => {
+    try {
+        const userId = req.body.userId;
+
+        // Find chats where the senderId matches the userId
+        const chats = await Chat.find({ senderId: userId })
+            .populate({
+                path: 'receiverId',
+                select: '-phone -countryCode' // Exclude phone and countryCode fields
+            });
+        console.log('jjwoeiffjoif', chats[0].receiverId._id);
+
+        const lastMessage = await Message.findOne({ receiverId: chats[0].receiverId._id });
+        console.log('lastMessage', lastMessage);
+        chats.push({ lastMessage: lastMessage });
+
+
+        res.status(200).json(Response({ data: chats, statusCode: 200, status: "Okay", message: "Chat list retrieved successfully" }));
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
 };
 
 
-module.exports = { getCurrentTime, saveMessage, getUserSpecificChat };
+
+module.exports = { getCurrentTime, saveMessage, createChat, getUserSpecificChat, getChatList };

@@ -5,7 +5,9 @@ const { Server } = require('socket.io');
 
 const app = require('../app');
 const { connectToDatabase } = require('../helpers/connection');
-const { getCurrentTime, saveMessage } = require('./messageController');
+const { getCurrentTime, saveMessage, createChat } = require('./messageController');
+const Chat = require('../models/Chat');
+
 const server = createServer(app);
 
 const io = new Server(server, {
@@ -27,22 +29,42 @@ const socketIO = (io) => {
             console.log(`${getCurrentTime()} Client disconnected`);
         });
 
-        socket.on('message', (msg, callback) => {
-            //send message to specific user
-            io.emit(`new::${msg.chatId}`, msg);
-            console.log(msg);
+        socket.on('message', async (msg, callback) => {
+            try {
+                // Send message to specific user
+                io.emit(`new::${msg.chatId}`, msg);
+                console.log(msg);
 
-            // save message to database and call a function
-            saveMessage(msg)
+                // Search for existing chat between sender and receiver
+                const searchChat = await Chat.findOne({ senderId: msg.senderId, receiverId: msg.receiverId });
 
-            //response back
-            callback(
-                {
+                // If chat does not exist, create a new one
+                if (!searchChat) {
+                    // Create chat
+                    const newChat = await createChat(msg);
+                    msg.chatId = newChat._id;
+                } else {
+                    msg.chatId = searchChat._id;
+                }
+
+                // Save message
+                await saveMessage(msg);
+
+                // Response back
+                callback({
                     message: msg,
                     type: "Message",
-                }
-            )
+                });
+            } catch (error) {
+                console.error(error);
+                // Handle errors here
+                callback({
+                    error: "An error occurred while processing the message",
+                    type: "Error",
+                });
+            }
         });
+
 
     });
 };

@@ -3,6 +3,7 @@ var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
 require('dotenv').config();
+const cors = require('cors');
 var logger = require('morgan');
 
 //import routes
@@ -30,6 +31,14 @@ var app = express();
 //DB connection
 connectToDatabase();
 
+// Enable CORS
+app.use(cors(
+  {
+    origin: "*",
+    optionsSuccessStatus: 200
+  }
+));
+
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
@@ -54,7 +63,7 @@ app.use('/api/v1/sheidule', sheiduleRouter);
 app.use('/api/v1/time-sheidule', timeSheiduleRouter);
 app.use('/api/v1/answer', answerRouter);
 app.use('/api/v1/subscription', subscriptionPlanRouter);
-app.use('/api/v1/chat', messageRoouter);
+app.use('/api/v1/message', messageRoouter);
 //test api route
 app.use('/api/v1/meowimage', multipleImageRouter);
 console.log("sdjfkhnkjhf");
@@ -68,6 +77,7 @@ app.get('/api/test', (req, res) => {
 app.use(function (req, res, next) {
   next(createError(404));
 });
+
 
 app.use((error, req, res, next) => {
   if (res.headersSent) {
