@@ -24,6 +24,7 @@ const therapistSchema = new mongoose.Schema({
     accepted: { type: Boolean, default: false },
     isBlocked: { type: Boolean, default: false },
     therapistType: { type: String, required: true, enum: ["Individual", "Couple Therapy", "Teen Therapy"], default: "Individual" },
+    messaged: { type: Boolean, default: false, required: false },
     password: {
         type: String, required: [true, "Password is required"], minlength: 3,
         set: (v) => bcrypt.hashSync(v, bcrypt.genSaltSync(10))

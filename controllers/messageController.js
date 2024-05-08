@@ -24,10 +24,11 @@ const saveMessage = (msg) => {
 };
 
 const createChat = async (msg) => {
-    Chat.create({
+    const newChat = Chat.create({
         senderId: msg.senderId,
         receiverId: msg.receiverId
     });
+    return newChat;
 };
 
 // const getUserSpecificChat = async (req, res) => {
@@ -45,18 +46,37 @@ const createChat = async (msg) => {
 
 const getUserSpecificChat = async (req, res) => {
     try {
+        const search = req.query.search || ""; // Ensure search is not undefined
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+
         const receiverId = req.params.receiverId;
         const senderId = req.body.userId;
-        console.log(receiverId, senderId);
-        const messages = await Message.find({
+
+        // Find messages where senderId and receiverId match, or vice versa
+        const query = {
             $or: [
                 { senderId: senderId, receiverId: receiverId },
                 { senderId: receiverId, receiverId: senderId }
             ]
-        });
+        };
+
+        // Count total number of messages
+        const totalMessages = await Message.countDocuments(query);
+
+        // Fetch messages with pagination
+        const messages = await Message.find(query)
+            .sort({ createdAt: -1 })
+            .limit(limit)
+            .skip((page - 1) * limit);
 
         res.status(200).json(Response({
             data: messages,
+            pagination: {
+                totalPages: Math.ceil(totalMessages / limit),
+                currentPage: page,
+                totalMessages: totalMessages,
+            },
             statusCode: 200,
             status: "Okay",
             message: "Messages retrieved successfully"
@@ -66,28 +86,39 @@ const getUserSpecificChat = async (req, res) => {
     }
 };
 
+
 const getChatList = async (req, res) => {
     try {
         const userId = req.body.userId;
 
         // Find chats where the senderId matches the userId
-        const chats = await Chat.find({ senderId: userId })
-            .populate({
-                path: 'receiverId',
-                select: '-phone -countryCode' // Exclude phone and countryCode fields
-            });
-        console.log('jjwoeiffjoif', chats[0].receiverId._id);
+        const chats = await Chat.find({ senderId: userId }).populate('receiverId');
 
-        const lastMessage = await Message.findOne({ receiverId: chats[0].receiverId._id });
-        console.log('lastMessage', lastMessage);
-        chats.push({ lastMessage: lastMessage });
+        // Get the last message for each chat
+        const messages = await Message.aggregate([
+            { $match: { chatId: { $in: chats.map(chat => chat._id) } } },
+            { $sort: { createdAt: -1 } }, // Sort messages by createdAt field in descending order
+            {
+                $group: {
+                    _id: '$chatId',
+                    lastMessage: { $first: '$$ROOT' } // Get the first message for each chat (which is actually the last message due to sorting)
+                }
+            }
+        ]);
 
+        // Combine chats with their respective last messages
+        const chatList = chats.map(chat => {
+            const lastMessage = messages.find(group => group._id.equals(chat._id));
+            return { chat, lastMessage: lastMessage ? lastMessage.lastMessage : null };
+        });
 
-        res.status(200).json(Response({ data: chats, statusCode: 200, status: "Okay", message: "Chat list retrieved successfully" }));
+        res.status(200).json(Response({ data: chatList, statusCode: 200, status: "Okay", message: "Chat list retrieved successfully" }));
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
 };
+
+
 
 
 

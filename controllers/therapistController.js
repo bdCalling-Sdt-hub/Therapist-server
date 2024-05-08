@@ -91,6 +91,10 @@ const signIn = async (req, res, next) => {
             return res.status(401).json(Response({ statusCode: 401, message: 'You are blocked', status: "Failed" }));
         }
 
+        // if (therapist.accepted === false) {
+        //     return res.status(401).json(Response({message: "You are not authorized", statusCode: 401, status: "Unauthorized"}))
+        // }
+
         // Compare the provided password with the stored hashed password
         const isPasswordValid = bcrypt.compare(password, therapist.password);
         console.log("---------------", isPasswordValid)
@@ -168,6 +172,19 @@ const getTherapist = async (req, res) => {
         res.status(500).json(Response({ message: "Internal Server Error", status: "Internal Server Error", statusCode: "500" }));
     }
 };
+
+const newTherapistForMessage = async (req, res) => {
+    console.log("fsjdfhksjfh")
+    try {
+        const therapist = await Therapist.find({ createdAt: -1 })
+        if (!therapist) {
+            res.status(200).json(Response({ message: "No therapist found", statusCode: 404, status: "Not Found" }))
+        }
+        res.status(200).json(Response({ data: therapist, message: "Thearapist for welcome message", status: "Okay", statusCode: 200 }))
+    } catch (error) {
+        res.status(500).json(Response({ message: "Internal server error" }))
+    }
+}
 
 const getSingleUser = async (req, res) => {
     try {
@@ -249,5 +266,6 @@ module.exports = {
     getSingleUser,
     signIn,
     therapistProfile,
-    updateTherapist
+    updateTherapist,
+    newTherapistForMessage
 }

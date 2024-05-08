@@ -40,15 +40,16 @@ const socketIO = (io) => {
 
                 // If chat does not exist, create a new one
                 if (!searchChat) {
-                    // Create chat
+                    // Create chat and wait for the result
                     const newChat = await createChat(msg);
                     msg.chatId = newChat._id;
                 } else {
                     msg.chatId = searchChat._id;
                 }
 
+
                 // Save message
-                await saveMessage(msg);
+                saveMessage(msg);
 
                 // Response back
                 callback({
