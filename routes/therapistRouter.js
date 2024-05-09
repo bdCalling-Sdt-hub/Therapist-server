@@ -18,7 +18,7 @@ router.get('/all', isValidUser, getTherapist);
 router.get('/:therapistId', isValidUser, getTherapist);
 router.post('/sign-in', signIn);
 router.post('/update', upload.single("image"), isValidUser, updateTherapist);
-router.get('/welcome-message', newTherapistForMessage);
+router.get('/welcome-message/default', newTherapistForMessage);
 
 
 

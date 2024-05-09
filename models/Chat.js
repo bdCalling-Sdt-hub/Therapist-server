@@ -3,7 +3,7 @@
 
 // const chatSchema = new mongoose.Schema({
 //     senderId: { type: mongoose.Schema.Types.ObjectId, required: true },
-//     receiverId: { type: mongoose.Schema.Types.ObjectId, required: true },
+//     participant: { type: mongoose.Schema.Types.ObjectId, required: true },
 // },
 //     { timestamps: true },
 // );
@@ -13,8 +13,8 @@
 const mongoose = require('mongoose');
 
 const chatSchema = new mongoose.Schema({
-    senderId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-    receiverId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+    senderId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' || "Tharpist", required: true },
+    participant: { type: mongoose.Schema.Types.ObjectId, ref: 'User' || "Tharpist", required: true },
 },
     { timestamps: true },
 );

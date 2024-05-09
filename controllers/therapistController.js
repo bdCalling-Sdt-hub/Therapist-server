@@ -176,12 +176,14 @@ const getTherapist = async (req, res) => {
 const newTherapistForMessage = async (req, res) => {
     console.log("fsjdfhksjfh")
     try {
-        const therapist = await Therapist.find({ createdAt: -1 })
-        if (!therapist) {
+        const therapists = await Therapist.find().sort({ createdAt: -1 });
+        console.log(therapists[0])
+        if (!therapists) {
             res.status(200).json(Response({ message: "No therapist found", statusCode: 404, status: "Not Found" }))
         }
-        res.status(200).json(Response({ data: therapist, message: "Thearapist for welcome message", status: "Okay", statusCode: 200 }))
+        res.status(200).json(Response({ data: therapists, message: "Thearapist for welcome message", status: "Okay", statusCode: 200 }))
     } catch (error) {
+        console.log(error.message)
         res.status(500).json(Response({ message: "Internal server error" }))
     }
 }

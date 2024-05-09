@@ -7,6 +7,7 @@ const app = require('../app');
 const { connectToDatabase } = require('../helpers/connection');
 const { getCurrentTime, saveMessage, createChat } = require('./messageController');
 const Chat = require('../models/Chat');
+const Response = require('../helpers/response');
 
 const server = createServer(app);
 
@@ -31,12 +32,16 @@ const socketIO = (io) => {
 
         socket.on('message', async (msg, callback) => {
             try {
-                // Send message to specific user
-                io.emit(`new::${msg.chatId}`, msg);
-                console.log(msg);
 
-                // Search for existing chat between sender and receiver
-                const searchChat = await Chat.findOne({ senderId: msg.senderId, receiverId: msg.receiverId });
+                console.log(msg.participant);
+
+                // Search for existing chat between sender and receiver, regardless of the order of senderId and participant
+                const searchChat = await Chat.findOne({
+                    $or: [
+                        { senderId: msg.senderId, participant: msg.participant },
+                        { senderId: msg.participant, participant: msg.senderId }
+                    ]
+                });
 
                 // If chat does not exist, create a new one
                 if (!searchChat) {
@@ -48,16 +53,25 @@ const socketIO = (io) => {
                 }
 
 
+
+
+                console.log(msg.chatId)
+
                 // Save message
-                saveMessage(msg);
+                const message = await saveMessage(msg);
+                console.log(message);
+
+                // Send message to specific user
+                io.emit(`new::${msg.chatId}`, message);
 
                 // Response back
                 callback({
-                    message: msg,
+                    message: message,
                     type: "Message",
                 });
+
             } catch (error) {
-                console.error(error);
+                console.error(error.message);
                 // Handle errors here
                 callback({
                     error: "An error occurred while processing the message",

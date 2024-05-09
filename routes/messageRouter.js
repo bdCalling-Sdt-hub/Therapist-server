@@ -9,7 +9,7 @@ const router = express.Router();
 //Import helper functions
 
 // routes
-router.get('/chat/:receiverId', isValidUser, getUserSpecificChat);
+router.get('/chat/:participant', isValidUser, getUserSpecificChat);
 router.get('/chat-list', isValidUser, getChatList);
 
 module.exports = router;
