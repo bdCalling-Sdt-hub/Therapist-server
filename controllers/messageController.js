@@ -137,6 +137,7 @@ const getChatList = async (req, res) => {
                 { participant: senderId },
             ]
         });
+        console.log(chats)
 
         // Extract participant IDs from chats
         const participantIds = chats.map(chat => chat.participant);
@@ -144,8 +145,10 @@ const getChatList = async (req, res) => {
 
         // Find messages where senderId matches and participant is in the extracted participantIds
         const messages = await Message.find({
-            senderId: { $in: senderId },
-            participant: { $in: participantIds }
+            $or: [
+                { senderId: senderId },
+                { participant: { $in: participantIds } }
+            ]
         }).sort({ createdAt: -1 }).populate('participant');
 
         res.status(200).json(messages);
