@@ -52,14 +52,8 @@ const socketIO = (io) => {
                     msg.chatId = searchChat._id;
                 }
 
-
-
-
-                console.log(msg.chatId)
-
                 // Save message
                 const message = await saveMessage(msg);
-                console.log(message);
 
                 // Send message to specific user
                 io.emit(`new::${msg.chatId}`, message);

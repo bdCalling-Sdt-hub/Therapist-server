@@ -1,3 +1,4 @@
+const { mongoose } = require("mongoose");
 const { response } = require("../app");
 const Response = require("../helpers/response");
 const Chat = require("../models/Chat");
@@ -32,19 +33,6 @@ const createChat = async (msg) => {
     });
     return newChat;
 };
-
-// const getUserSpecificChat = async (req, res) => {
-//     try {
-//         // const chatId = req.params.chatId;
-//         const participant = req.params.participant;
-//         const senderId = req.body.userId;
-//         const messages = await Message.find({ chatId: chatId });
-//         console.log(messages);
-//         res.status(200).json(Response({ messages: "Message get succesfully", statusCode: 200, status: "Okay", data: messages }));
-//     } catch (error) {
-//         res.status(500).json({ message: error.message });
-//     }
-// };
 
 const getUserSpecificChat = async (req, res) => {
     try {
@@ -88,44 +76,6 @@ const getUserSpecificChat = async (req, res) => {
     }
 };
 
-
-// const getChatList = async (req, res) => {
-//     try {
-//         const userId = req.body.userId;
-//         console.log(userId)
-
-//         // Find chats where the senderId matches the userId
-//         const chats = await Chat.find({
-//             $or: [
-//                 { senderId: userId },
-//                 { participant: userId },
-//             ]
-//         }).populate('participant');
-
-//         // Get the last message for each chat
-//         const messages = await Message.aggregate([
-//             { $match: { chatId: { $in: chats.map(chat => chat._id) } } },
-//             { $sort: { createdAt: -1 } }, // Sort messages by createdAt field in descending order
-//             {
-//                 $group: {
-//                     _id: '$chatId',
-//                     lastMessage: { $first: '$$ROOT' } // Get the first message for each chat (which is actually the last message due to sorting)
-//                 }
-//             }
-//         ]);
-
-//         // Combine chats with their respective last messages
-//         const chatList = chats.map(chat => {
-//             const lastMessage = messages.find(group => group._id.equals(chat._id));
-//             return { chat, lastMessage: lastMessage ? lastMessage.lastMessage : null };
-//         });
-
-//         res.status(200).json(Response({ data: chatList, statusCode: 200, status: "Okay", message: "Chat list retrieved successfully" }));
-//     } catch (error) {
-//         res.status(500).json({ message: error.message });
-//     }
-// };
-
 const getChatList = async (req, res) => {
     try {
         const senderId = req.body.userId;
@@ -137,61 +87,53 @@ const getChatList = async (req, res) => {
                 { participant: senderId },
             ]
         });
-        console.log(chats)
 
-        // Extract participant IDs from chats
-        const participantIds = chats.map(chat => chat.participant);
-        console.log(participantIds)
+        // Extract chat IDs
+        const chatIds = chats.map(chat => chat._id);
 
-        // Find messages where senderId matches and participant is in the extracted participantIds
-        const messages = await Message.find({
-            $or: [
-                { senderId: senderId },
-                { participant: { $in: participantIds } }
-            ]
-        }).sort({ createdAt: -1 }).populate('participant');
+        // Group messages by chatId and retrieve only the last message for each chat
+        const chatMessages = await Message.aggregate([
+            {
+                $match: { chatId: { $in: chatIds } }
+            },
+            {
+                $sort: { createdAt: -1 }
+            },
+            {
+                $group: {
+                    _id: "$chatId",
+                    lastMessage: { $first: "$$ROOT" }
+                }
+            }
+        ]);
 
-        res.status(200).json(messages);
+
+
+        // Combine chats with their last messages
+        const chatList = await Promise.all(chats.map(async chat => {
+            const chatMessagesObj = chatMessages.find(msg => msg._id.toString() === chat._id.toString());
+            let participant;
+            if (chat.senderId.toString() === senderId) {
+                participant = chat.participant;
+            } else {
+                participant = chat.senderId;
+            }
+            const participantDetails = await User.findById(participant);
+            return {
+                chat: chat,
+                participantDetails: participantDetails,
+                lastMessage: chatMessagesObj ? chatMessagesObj.lastMessage : null,
+            };
+        }));
+
+        // Now you can send the chatList in the response
+        res.status(200).json(Response({ data: chatList }));
+
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
 };
 
-
-
-// const getChatList = async (req, res) => {
-//     try {
-//         const senderId = req.body.userId;
-//         const chats = await Chat.find({
-//             $or: [
-//                 { senderId: senderId },
-//                 { participant: senderId }
-//             ]
-//         });
-
-//         // Find latest message
-//         const message = await Message.findOne({
-//             $or: [
-//                 { senderId: senderId },
-//                 { participant: senderId },
-//             ]
-//         }).sort({ createdAt: -1 });
-
-//         // Prepare JSON response
-//         const jsonResponse = {
-//             // user: user,
-//             chat: chats,
-//             lastMessage: message
-//         };
-
-//         res.status(200).json(Response({ data: jsonResponse }));
-
-//         console.log(chats)
-//         console.log(message)
-//     } catch {
-//         res.status(500).json(Response({ message: "Internal servr error" }))
-//     }
-// }
 
 
 

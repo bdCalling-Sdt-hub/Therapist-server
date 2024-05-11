@@ -15,6 +15,7 @@ const mongoose = require('mongoose');
 const chatSchema = new mongoose.Schema({
     senderId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' || "Tharpist", required: true },
     participant: { type: mongoose.Schema.Types.ObjectId, ref: 'User' || "Tharpist", required: true },
+    chatId: { type: mongoose.Schema.Types.ObjectId, required: false }
 },
     { timestamps: true },
 );
