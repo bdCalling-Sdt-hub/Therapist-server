@@ -12,8 +12,34 @@ const apply = async (req, res) => {
     try {
         const { name, email, password, therapistType, dateOfBirth, phone, countryCode } = req.body;
         const image = req.files['image'];
+        console.log("image", image);
+        let modifiedImage;
+        if (image) {
+            modifiedImage = {
+                publicFileURL: image.path,
+                path: image.path,
+            }
+        }
+        console.log("modifiedImage", modifiedImage);
         const certificate = req.files['certificate'];
+        console.log("certificate", certificate);
+        let modifiedCertificate;
+        if (certificate) {
+            modifiedCertificate = {
+                publicFileURL: certificate.path,
+                path: certificate.path,
+            }
+        }
         const resume = req.files['resume'];
+        console.log("resume", resume);
+        let modifiedResume;
+        if (resume) {
+            modifiedResume = {
+                publicFileURL: resume.path,
+                path: resume.path,
+            }
+        }
+        console.log("modifiedResume", modifiedResume);
 
         // Generate OTC (One-Time Code)
         const oneTimeCode = Math.floor(Math.random() * (999999 - 100000 + 1)) + 100000;
@@ -42,12 +68,12 @@ const apply = async (req, res) => {
         }
         const therapist = await Therapist.create({
             name,
-            resume,
+            modifiedResume,
             therapistType,
-            certificate,
+            modifiedCertificate,
             email,
             password,
-            image,
+            modifiedImage,
             oneTimeCode,
             dateOfBirth,
             phone,

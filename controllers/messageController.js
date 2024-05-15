@@ -21,6 +21,8 @@ const saveMessage = (msg) => {
         senderId: msg.senderId,
         participant: msg.participant,
         chatId: msg.chatId,
+        publicFileURL: msg.publicFileURL,
+        path: msg.publicFileURL,
         sendTime: getCurrentTime()
     });
     return saveMessage;
@@ -136,7 +138,49 @@ const getChatList = async (req, res) => {
 
 
 
+const fileMessage = async (req, res) => {
+    try {
+        const { messageType, senderId, participant, message } = req.body;
+        const file = req.file;
+        if (!file) {
+            return res.status(400).json({ error: "No file uploaded" });
+        }
+
+        const modifiedFile = {
+            publicFileURL: file.path,
+            path: file.path,
+            senderId,
+            participant,
+            messageType,
+            message
+        };
+        console.log(modifiedFile)
+        console.log(messageType)
+        // Search for existing chat between sender and receiver, regardless of the order of senderId and participant
+        const searchChat = await Chat.findOne({
+            $or: [
+                { senderId: senderId, participant: participant },
+                { senderId: participant, participant: senderId }
+            ]
+        });
+
+        // If chat does not exist, create a new one
+        if (!searchChat) {
+            // Create chat and wait for the result
+            const newChat = await createChat(modifiedFile);
+            modifiedFile.chatId = newChat._id;
+        } else {
+            modifiedFile.chatId = searchChat._id;
+        }
+
+        // Save message
+        const newMessage = await saveMessage(modifiedFile);
+        return res.status(200).json(newMessage);
+    } catch (error) {
+        console.error(error.message);
+        return res.status(500).json({ error: "Internal server error" });
+    }
+};
 
 
-
-module.exports = { getCurrentTime, saveMessage, createChat, getUserSpecificChat, getChatList };
+module.exports = { getCurrentTime, saveMessage, createChat, getUserSpecificChat, getChatList, fileMessage };

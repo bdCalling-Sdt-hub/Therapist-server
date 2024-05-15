@@ -6,7 +6,15 @@ const messageSchema = new mongoose.Schema({
     senderId: { type: mongoose.Schema.Types.ObjectId, required: true },
     participant: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
     message: { type: String, required: true },
+    publicFileURL: { type: String, required: false },
+    path: { type: String, required: false },
     sendTime: { type: String, required: true },
+    messageType: {
+        type: String,
+        enum: ['text', 'image', 'text/image'], // Define allowed values
+        default: 'text',
+        required: false
+    }
 },
     { timestamps: true },
 );

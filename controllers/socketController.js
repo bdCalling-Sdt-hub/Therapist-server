@@ -1,5 +1,6 @@
 const { createServer } = require('node:http');
 const { Server } = require('socket.io');
+
 // const mongoose = require('mongoose');
 // const { ObjectId } = mongoose.Types;
 
@@ -74,9 +75,9 @@ const socketIO = (io) => {
             }
         });
 
-
     });
 };
+
 
 module.exports = socketIO;
 
