@@ -4,6 +4,7 @@ const Response = require("../helpers/response");
 const Chat = require("../models/Chat");
 const Message = require("../models/Message");
 const User = require("../models/User");
+const Therapist = require("../models/Therapist");
 
 //Timestamp function for socket
 const getCurrentTime = () => {
@@ -121,7 +122,7 @@ const getChatList = async (req, res) => {
             } else {
                 participant = chat.senderId;
             }
-            const participantDetails = await User.findById(participant);
+            const participantDetails = await User.findById(participant) || await Therapist.findById(participant);
             return {
                 chat: chat,
                 participantDetails: participantDetails,
@@ -133,6 +134,7 @@ const getChatList = async (req, res) => {
         res.status(200).json(Response({ data: chatList }));
 
     } catch (error) {
+        console.log(error.message)
         res.status(500).json({ message: error.message });
     }
 };
@@ -143,9 +145,9 @@ const fileMessage = async (req, res) => {
     try {
         const { senderId, participant, message } = req.body;
         const file = req.file;
-        if (!file) {
-            return res.status(400).json({ error: "No file uploaded" });
-        }
+        // if (!file) {
+        //     return res.status(400).json({ error: "No file uploaded" });
+        // }
 
         let newMessageType;
 

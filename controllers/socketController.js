@@ -23,6 +23,7 @@ connectToDatabase();
 
 
 const socketIO = (io) => {
+    console.log(io)
     console.log("Socket server is lenening on port 300")
     io.on('connection', (socket) => {
         console.log(`${getCurrentTime()} New client connected`);
