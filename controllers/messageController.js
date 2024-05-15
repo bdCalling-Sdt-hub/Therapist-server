@@ -23,6 +23,7 @@ const saveMessage = (msg) => {
         chatId: msg.chatId,
         publicFileURL: msg.publicFileURL,
         path: msg.publicFileURL,
+        messageType: msg.messageType,
         sendTime: getCurrentTime()
     });
     return saveMessage;
@@ -140,10 +141,22 @@ const getChatList = async (req, res) => {
 
 const fileMessage = async (req, res) => {
     try {
-        const { messageType, senderId, participant, message } = req.body;
+        const { senderId, participant, message } = req.body;
         const file = req.file;
         if (!file) {
             return res.status(400).json({ error: "No file uploaded" });
+        }
+
+        let newMessageType;
+
+        if (!file && !message) {
+            return res.status(400).json({ error: "No file or message uploaded" });
+        } else if (file && message) {
+            newMessageType = 'text/image';
+        } else if (file) {
+            newMessageType = "image";
+        } else if (message) {
+            newMessageType = 'text';
         }
 
         const modifiedFile = {
@@ -151,11 +164,11 @@ const fileMessage = async (req, res) => {
             path: file.path,
             senderId,
             participant,
-            messageType,
+            messageType: newMessageType,
             message
         };
         console.log(modifiedFile)
-        console.log(messageType)
+        console.log(newMessageType)
         // Search for existing chat between sender and receiver, regardless of the order of senderId and participant
         const searchChat = await Chat.findOne({
             $or: [
