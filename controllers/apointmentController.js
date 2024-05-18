@@ -1,7 +1,9 @@
 const Response = require("../helpers/response");
 const Apointment = require("../models/Apointment");
 const Package = require("../models/Package");
+const Sheidule = require("../models/Sheidule");
 const User = require("../models/User");
+const { sheidule } = require("./sheiduleController");
 
 const getApointment = async (req, res) => {
     const { packageId, date, time } = req.body;
@@ -62,13 +64,18 @@ const myAssignedList = async (req, res) => {
                 { userId: userId },
                 { therapistId: userId }
             ]
-        });
-        console.log(myAssignment)
-        res.status(200).json(Response({ message: "My apointment", data: myAssignment, status: "Okay", statusCode: 200 }))
+        })
+            .populate("userId")
+            .populate("therapistId")
+            .populate("scheduleId");
+
+        console.log(myAssignment);
+        res.status(200).json(Response({ message: "My appointment", data: myAssignment, status: "Okay", statusCode: 200 }));
     } catch (error) {
-        res.status(500).json(Response({ message: "Internal server Error" }))
+        console.error(error);
+        res.status(500).json(Response({ message: "Internal server Error" }));
     }
-}
+};
 
 const schedule = async (req, res) => {
     const { date, time } = req.body;
@@ -80,5 +87,5 @@ module.exports = {
     getApointment,
     assignDoctor,
     assignTherapist,
-    myAssignedList
+    myAssignedList,
 }

@@ -156,11 +156,32 @@ const createSheidule = async (req, res) => {
     }
 };
 
+const bookSchedule = async (req, res) => {
+    try {
+        const scheduleId = req.params.scheduleId;
+        const userId = req.body.userId;
+        console.log(userId)
+        const sheidule = await Sheidule.findById(scheduleId);
+        const apointment = await Apointment.findOne({ userId: userId });
+        console.log("hiiiiiiiiii", apointment)
+        apointment.scheduleId = scheduleId;
+        sheidule.userId = userId;
+        sheidule.isBooked = true;
+        await sheidule.save();
+        await apointment.save();
+        res.status(200).json({ message: "Schedule booked succesfuly", data: sheidule, status: "Okay", stausCode: 200 })
+    } catch (error) {
+        console.log(error.message)
+        res.status(500).json(Response({ message: "Internal server Error" }))
+    }
+};
+
 module.exports = {
     sheidule,
     getSheidule,
     matchTherapistWithSheidule,
     assignTherapistToPatient,
     apointmentDetailsForDoctors,
-    createSheidule
+    createSheidule,
+    bookSchedule
 };
