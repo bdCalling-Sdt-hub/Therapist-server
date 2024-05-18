@@ -38,6 +38,38 @@ const assignDoctor = async (req, res) => {
     }
 };
 
+const assignTherapist = async (req, res) => {
+    try {
+        const therapist = req.body.therapistId;
+        const user = req.params.userId;
+        console.log(user)
+        console.log(therapist)
+        const apointment = await Apointment.create({
+            userId: user,
+            therapistId: therapist
+        });
+        res.status(200).json(Response({ "message": "Therapist assign succesfuly", statusCode: 200, status: "Okay", data: apointment }))
+    } catch (error) {
+        res.status(500).json("Internal server error")
+    }
+};
+
+const myAssignedList = async (req, res) => {
+    try {
+        const userId = req.body.userId;
+        const myAssignment = await Apointment.findOne({
+            $or: [
+                { userId: userId },
+                { therapistId: userId }
+            ]
+        });
+        console.log(myAssignment)
+        res.status(200).json(Response({ message: "My apointment", data: myAssignment, status: "Okay", statusCode: 200 }))
+    } catch (error) {
+        res.status(500).json(Response({ message: "Internal server Error" }))
+    }
+}
+
 const schedule = async (req, res) => {
     const { date, time } = req.body;
     const apointment = await Apointment.create({ userId: req.user._id, date, time });
@@ -46,5 +78,7 @@ const schedule = async (req, res) => {
 
 module.exports = {
     getApointment,
-    assignDoctor
+    assignDoctor,
+    assignTherapist,
+    myAssignedList
 }

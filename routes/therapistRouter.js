@@ -8,6 +8,7 @@ const { apply, acceptTherapistRequest, getTherapist, signIn, therapistProfile, u
 const upload = require('../middlewares.js/fileUpload');
 const uploadMiddleware = require('../middlewares.js/multipleUpload');
 const { isValidUser } = require('../middlewares.js/auth');
+const { assignTherapist } = require('../controllers/apointmentController');
 
 console.log("heeee")
 // routes
@@ -19,6 +20,7 @@ router.get('/:therapistId', isValidUser, getTherapist);
 router.post('/sign-in', signIn);
 router.post('/update', upload.single("image"), isValidUser, updateTherapist);
 router.get('/welcome-message/default', newTherapistForMessage);
+
 
 
 
