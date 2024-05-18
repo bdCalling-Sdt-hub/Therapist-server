@@ -7,6 +7,7 @@ const { userLogin } = require("../services/userService");
 const { createJSONWebToken } = require("../helpers/jsonWebToken");
 const emailWithNodemailer = require("../helpers/email");
 const { deleteImage } = require("../helpers/deleteImage");
+const pagination = require("../helpers/pagination");
 
 const apply = async (req, res) => {
     try {
@@ -14,10 +15,11 @@ const apply = async (req, res) => {
         const image = req.files['image'];
         console.log("image", image);
         let modifiedImage;
+        console.log(modifiedImage)
         if (image) {
             modifiedImage = {
-                publicFileURL: image.path,
-                path: image.path,
+                publicFileURL: image[0].path,
+                path: image[0].path,
             }
         }
         console.log("modifiedImage", modifiedImage);
@@ -26,8 +28,8 @@ const apply = async (req, res) => {
         let modifiedCertificate;
         if (certificate) {
             modifiedCertificate = {
-                publicFileURL: certificate.path,
-                path: certificate.path,
+                publicFileURL: certificate[0].path,
+                path: certificate[0].path,
             }
         }
         const resume = req.files['resume'];
@@ -35,8 +37,8 @@ const apply = async (req, res) => {
         let modifiedResume;
         if (resume) {
             modifiedResume = {
-                publicFileURL: resume.path,
-                path: resume.path,
+                publicFileURL: resume[0].path,
+                path: resume[0].path,
             }
         }
         console.log("modifiedResume", modifiedResume);
@@ -68,12 +70,12 @@ const apply = async (req, res) => {
         }
         const therapist = await Therapist.create({
             name,
-            modifiedResume,
+            resume: modifiedResume,
             therapistType,
-            modifiedCertificate,
+            certificate: modifiedCertificate,
             email,
             password,
-            modifiedImage,
+            image: modifiedImage,
             oneTimeCode,
             dateOfBirth,
             phone,
@@ -192,12 +194,22 @@ const acceptTherapistRequest = async (req, res) => {
 const getTherapist = async (req, res) => {
     console.log("get therapist");
     try {
-        const therapist = await Therapist.find();
-        res.status(200).json(Response({ message: "Therapist found successfully", status: "OK", statusCode: "200", data: therapist }));
+        const limit = parseInt(req.query.limit) || 2; // Default limit is 10, or use the provided limit if any
+        const page = parseInt(req.query.page) || 3; // Default page is 1, or use the provided page if any
+
+        const therapistCount = await Therapist.countDocuments();
+        const pageInfo = pagination(therapistCount, limit, page);
+        console.log(pageInfo.skip)
+
+        const therapists = await Therapist.find().skip((page - 1) * limit).limit(limit);
+
+        res.status(200).json(Response({ message: "Therapists found successfully", status: "OK", statusCode: "200", data: therapists, pagination: pageInfo }));
     } catch (error) {
+        console.error(error);
         res.status(500).json(Response({ message: "Internal Server Error", status: "Internal Server Error", statusCode: "500" }));
     }
 };
+
 
 const newTherapistForMessage = async (req, res) => {
     console.log("fsjdfhksjfh")

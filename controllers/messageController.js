@@ -190,6 +190,7 @@ const fileMessage = async (req, res) => {
 
         // Save message
         const newMessage = await saveMessage(modifiedFile);
+        io.emit(`new::${modifiedFile.chatId}`, newMessage);
         return res.status(200).json(newMessage);
     } catch (error) {
         console.error(error.message);
