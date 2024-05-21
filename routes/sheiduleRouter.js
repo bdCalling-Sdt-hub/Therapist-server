@@ -10,12 +10,12 @@ const router = express.Router();
 
 //routes
 router.post('/make', isValidUser, sheidule);
-router.get('/all', getSheidule);
+router.get('/all/:therapistId', isValidUser, getSheidule);
 router.post('/match', isValidUser, matchTherapistWithSheidule);
 router.post('/assign/:therapistId', isValidUser, assignTherapistToPatient);
 router.get('/apointment/details', isValidUser, apointmentDetailsForDoctors);
-router.post('/create', isValidUser, createSheidule)
-router.post('/book/:scheduleId', isValidUser, bookSchedule)
+router.post('/create', isValidUser, createSheidule);
+router.post('/book/:scheduleId', isValidUser, bookSchedule);
 
 
 module.exports = router;

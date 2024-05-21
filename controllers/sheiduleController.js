@@ -7,29 +7,45 @@ const User = require("../models/User");
 const sheidule = async (req, res) => {
     try {
         const date = req.body.date;
+        const times = req.body.time;
         const therapistId = req.body.userId;
+
+        // Validate the therapist
         const therapist = await Therapist.findById(therapistId);
         if (!therapist) {
-            return res.status(400).json(Response({ message: "Therapist not found", type: "Therapist", satus: "Not Found", stausCode: 400 }))
-        };
+            return res.status(400).json(Response({ message: "Therapist not found", type: "Therapist", status: "Not Found", statusCode: 400 }));
+        }
+
+        // Unauthorized check (though this seems redundant if `findById` was used correctly)
         if (therapist._id.toString() !== therapistId) {
-            return res.status(200).json(Response({ message: "Unauthorized", type: "Therapist", status: "Unauthorized", statusCode: 400 }))
-        };
-        const sheidule = await Sheidule.create({ date, therapistId });
-        res.status(201).json(Response({ message: "Sheidule has been created successfully", data: sheidule, type: "Therapist", status: "Success", statusCode: 201 }));
+            return res.status(400).json(Response({ message: "Unauthorized", type: "Therapist", status: "Unauthorized", statusCode: 400 }));
+        }
+
+        // Iterate over times and create separate documents for each time
+        const schedules = await Promise.all(times.map(async (time) => {
+            return await Sheidule.create({ date, time, therapistId });
+        }));
+
+        res.status(201).json(Response({ message: "Schedules have been created successfully", data: schedules, type: "Therapist", status: "Success", statusCode: 201 }));
     } catch (error) {
-        res.status(500).json(Response({ message: error.message }))
-    };
+        console.log(error.message);
+        res.status(500).json(Response({ message: error.message }));
+    }
 };
 
 const getSheidule = async (req, res) => {
     try {
+        const therapistId = req.params.therapistId;
         const search = Number(req.query.search) || "";
         const page = Number(req.query.page) || 1;
         const limit = Number(req.query.limit) || 2;
         const searchRexExp = new RegExp(".*" + search + ".*", "i");
+        const userId = req.body.userId;
 
-        const sheidule = await Sheidule.find()
+        const sheidule = await Sheidule.find({
+            therapistId: therapistId,
+            isBooked: { $ne: true }
+        })
             .limit(limit)
             .skip((page - 1) * limit);
 
@@ -160,7 +176,7 @@ const bookSchedule = async (req, res) => {
     try {
         const scheduleId = req.params.scheduleId;
         const userId = req.body.userId;
-        console.log(userId)
+        console.log("meow", userId)
         const sheidule = await Sheidule.findById(scheduleId);
         const apointment = await Apointment.findOne({ userId: userId });
         console.log("hiiiiiiiiii", apointment)
