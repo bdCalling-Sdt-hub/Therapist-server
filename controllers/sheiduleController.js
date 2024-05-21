@@ -4,6 +4,35 @@ const Sheidule = require("../models/Sheidule");
 const Therapist = require("../models/Therapist");
 const User = require("../models/User");
 
+// const sheidule = async (req, res) => {
+//     try {
+//         const date = req.body.date;
+//         const times = req.body.time;
+//         const therapistId = req.body.userId;
+
+//         // Validate the therapist
+//         const therapist = await Therapist.findById(therapistId);
+//         if (!therapist) {
+//             return res.status(400).json(Response({ message: "Therapist not found", type: "Therapist", status: "Not Found", statusCode: 400 }));
+//         }
+
+//         // Unauthorized check (though this seems redundant if `findById` was used correctly)
+//         if (therapist._id.toString() !== therapistId) {
+//             return res.status(400).json(Response({ message: "Unauthorized", type: "Therapist", status: "Unauthorized", statusCode: 400 }));
+//         }
+
+//         // Iterate over times and create separate documents for each time
+//         const schedules = await Promise.all(times.map(async (time) => {
+//             return await Sheidule.create({ date, time, therapistId });
+//         }));
+
+//         res.status(201).json(Response({ message: "Schedules have been created successfully", data: schedules, type: "Therapist", status: "Success", statusCode: 201 }));
+//     } catch (error) {
+//         console.log(error.message);
+//         res.status(500).json(Response({ message: error.message }));
+//     }
+// };
+
 const sheidule = async (req, res) => {
     try {
         const date = req.body.date;
@@ -13,25 +42,48 @@ const sheidule = async (req, res) => {
         // Validate the therapist
         const therapist = await Therapist.findById(therapistId);
         if (!therapist) {
-            return res.status(400).json(Response({ message: "Therapist not found", type: "Therapist", status: "Not Found", statusCode: 400 }));
+            return res.status(400).json({
+                message: "Therapist not found",
+                type: "Therapist",
+                status: "Not Found",
+                statusCode: 400
+            });
         }
 
         // Unauthorized check (though this seems redundant if `findById` was used correctly)
         if (therapist._id.toString() !== therapistId) {
-            return res.status(400).json(Response({ message: "Unauthorized", type: "Therapist", status: "Unauthorized", statusCode: 400 }));
+            return res.status(400).json({
+                message: "Unauthorized",
+                type: "Therapist",
+                status: "Unauthorized",
+                statusCode: 400
+            });
         }
+
+        // Convert date to 'YYYY-MM-DD' format
+        const formattedDate = new Date(date).toISOString().split('T')[0];
 
         // Iterate over times and create separate documents for each time
         const schedules = await Promise.all(times.map(async (time) => {
-            return await Sheidule.create({ date, time, therapistId });
+            return await Sheidule.create({ date: formattedDate, time, therapistId });
         }));
 
-        res.status(201).json(Response({ message: "Schedules have been created successfully", data: schedules, type: "Therapist", status: "Success", statusCode: 201 }));
+        res.status(201).json({
+            message: "Schedules have been created successfully",
+            data: schedules,
+            type: "Therapist",
+            status: "Success",
+            statusCode: 201
+        });
     } catch (error) {
         console.log(error.message);
-        res.status(500).json(Response({ message: error.message }));
+        res.status(500).json({
+            message: "Internal server error",
+            error: error.message
+        });
     }
 };
+
 
 const getSheidule = async (req, res) => {
     try {
@@ -72,6 +124,57 @@ const getSheidule = async (req, res) => {
         res.status(500).json(Response({ message: error.message }));
     };
 };
+
+const getSheiduleByTherapist = async (req, res) => {
+    try {
+        const therapistId = req.body.userId;
+        const { date } = req.body;
+
+        // Log the therapist ID and date for debugging
+        console.log('Therapist ID:', therapistId);
+        console.log('Date:', date);
+
+        // Construct the query object
+        const query = {
+            therapistId: therapistId,
+            // isBooked: { $ne: true } // Ensure that isBooked is not true
+        };
+
+        // Add single date filter if provided
+        if (date) {
+            const startOfDay = new Date(date);
+            startOfDay.setUTCHours(0, 0, 0, 0);
+
+            const endOfDay = new Date(date);
+            endOfDay.setUTCHours(23, 59, 59, 999);
+
+            query.date = {
+                $gte: startOfDay,
+                $lte: endOfDay
+            };
+        }
+
+        // Log the constructed query for debugging
+        console.log('Query:', JSON.stringify(query, null, 2));
+
+        // Fetch schedules based on the query
+        const schedules = await Sheidule.find({ therapistId: therapistId, date: date });
+
+        res.status(200).json({
+            message: "Schedule found successfully",
+            data: schedules,
+            statusCode: 200,
+            status: "Okay"
+        });
+    } catch (error) {
+        console.log('Error:', error.message);
+        res.status(500).json({
+            message: "Internal server error",
+            error: error.message
+        });
+    }
+};
+
 
 const matchTherapistWithSheidule = async (req, res) => {
     try {
@@ -199,5 +302,6 @@ module.exports = {
     assignTherapistToPatient,
     apointmentDetailsForDoctors,
     createSheidule,
-    bookSchedule
+    bookSchedule,
+    getSheiduleByTherapist
 };

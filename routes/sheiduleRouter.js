@@ -1,5 +1,5 @@
 const express = require('express');
-const { sheidule, getSheidule, assignTherapistToPatient, matchTherapistWithSheidule, apointmentDetailsForDoctors, createSheidule } = require('../controllers/sheiduleController');
+const { sheidule, getSheidule, assignTherapistToPatient, matchTherapistWithSheidule, apointmentDetailsForDoctors, createSheidule, getSheiduleByTherapist } = require('../controllers/sheiduleController');
 const { isValidUser } = require('../middlewares.js/auth');
 const { bookSchedule } = require('../controllers/sheiduleController');
 const router = express.Router();
@@ -16,6 +16,7 @@ router.post('/assign/:therapistId', isValidUser, assignTherapistToPatient);
 router.get('/apointment/details', isValidUser, apointmentDetailsForDoctors);
 router.post('/create', isValidUser, createSheidule);
 router.post('/book/:scheduleId', isValidUser, bookSchedule);
+router.get('/therapist', isValidUser, getSheiduleByTherapist);
 
 
 module.exports = router;
