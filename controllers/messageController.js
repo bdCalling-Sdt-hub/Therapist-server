@@ -80,6 +80,17 @@ const getUserSpecificChat = async (req, res) => {
     }
 };
 
+// const getUserSpecificChat = async (req, res) => {
+//     try {
+//         const chatId = req.params.participant;
+//         console.log(chatId)
+//         const specificChat = await Message.find({ chatId: chatId });
+//         res.status(200).json(Response({ message: "Your chat retrieve succesfuly", data: specificChat }))
+//     } catch (error) {
+//         res.status(500).json({ message: error.message });
+//     }
+// };
+
 const getChatList = async (req, res) => {
     try {
         const senderId = req.body.userId;

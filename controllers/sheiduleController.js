@@ -3,6 +3,7 @@ const Apointment = require("../models/Apointment");
 const Sheidule = require("../models/Sheidule");
 const Therapist = require("../models/Therapist");
 const User = require("../models/User");
+const mongoose = require('mongoose');
 
 // const sheidule = async (req, res) => {
 //     try {
@@ -35,9 +36,7 @@ const User = require("../models/User");
 
 const sheidule = async (req, res) => {
     try {
-        const date = req.body.date;
-        const times = req.body.time;
-        const therapistId = req.body.userId;
+        const { date, time: times, userId: therapistId } = req.body;
 
         // Validate the therapist
         const therapist = await Therapist.findById(therapistId);
@@ -50,18 +49,24 @@ const sheidule = async (req, res) => {
             });
         }
 
-        // Unauthorized check (though this seems redundant if `findById` was used correctly)
-        if (therapist._id.toString() !== therapistId) {
-            return res.status(400).json({
-                message: "Unauthorized",
-                type: "Therapist",
-                status: "Unauthorized",
-                statusCode: 400
-            });
-        }
-
         // Convert date to 'YYYY-MM-DD' format
         const formattedDate = new Date(date).toISOString().split('T')[0];
+
+        // Check for existing schedules with the same date and time
+        const existingSchedules = await Sheidule.find({
+            therapistId,
+            date: formattedDate,
+            time: { $in: times }
+        });
+
+        if (existingSchedules.length > 0) {
+            return res.status(400).json(Response({
+                message: "You already have schedule on this time, please select different",
+                type: "Schedule",
+                status: "Conflict",
+                statusCode: 400
+            }));
+        }
 
         // Iterate over times and create separate documents for each time
         const schedules = await Promise.all(times.map(async (time) => {
@@ -71,7 +76,7 @@ const sheidule = async (req, res) => {
         res.status(201).json({
             message: "Schedules have been created successfully",
             data: schedules,
-            type: "Therapist",
+            type: "Schedule",
             status: "Success",
             statusCode: 201
         });
@@ -128,44 +133,23 @@ const getSheidule = async (req, res) => {
 const getSheiduleByTherapist = async (req, res) => {
     try {
         const therapistId = req.body.userId;
-        const { date } = req.body;
+        console.log(therapistId)
+        let { date } = req.body;
 
-        // Log the therapist ID and date for debugging
-        console.log('Therapist ID:', therapistId);
-        console.log('Date:', date);
-
-        // Construct the query object
-        const query = {
-            therapistId: therapistId,
-            // isBooked: { $ne: true } // Ensure that isBooked is not true
-        };
-
-        // Add single date filter if provided
-        if (date) {
-            const startOfDay = new Date(date);
-            startOfDay.setUTCHours(0, 0, 0, 0);
-
-            const endOfDay = new Date(date);
-            endOfDay.setUTCHours(23, 59, 59, 999);
-
-            query.date = {
-                $gte: startOfDay,
-                $lte: endOfDay
-            };
-        }
-
-        // Log the constructed query for debugging
-        console.log('Query:', JSON.stringify(query, null, 2));
+        // Remove the time part from the date string
+        date = new Date(date).toISOString().split('T')[0];
+        const therapistObjectId = new mongoose.Types.ObjectId(therapistId);
 
         // Fetch schedules based on the query
-        const schedules = await Sheidule.find({ therapistId: therapistId, date: date });
+        const schedules = await Sheidule.find({ therapistId: therapistObjectId, date: date });
+        console.log(schedules)
 
-        res.status(200).json({
+        res.status(200).json(Response({
             message: "Schedule found successfully",
             data: schedules,
             statusCode: 200,
             status: "Okay"
-        });
+        }));
     } catch (error) {
         console.log('Error:', error.message);
         res.status(500).json({
