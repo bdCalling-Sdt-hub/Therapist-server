@@ -16,7 +16,7 @@ router.post('/assign/:therapistId', isValidUser, assignTherapistToPatient);
 router.get('/apointment/details', isValidUser, apointmentDetailsForDoctors);
 router.post('/create', isValidUser, createSheidule);
 router.post('/book/:scheduleId', isValidUser, bookSchedule);
-router.get('/therapist', isValidUser, getSheiduleByTherapist);
+router.get('/therapist/:date', isValidUser, getSheiduleByTherapist);
 
 
 module.exports = router;

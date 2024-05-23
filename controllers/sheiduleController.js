@@ -130,36 +130,6 @@ const getSheidule = async (req, res) => {
     };
 };
 
-const getSheiduleByTherapist = async (req, res) => {
-    try {
-        const therapistId = req.body.userId;
-        console.log(therapistId)
-        let { date } = req.body;
-
-        // Remove the time part from the date string
-        date = new Date(date).toISOString().split('T')[0];
-        const therapistObjectId = new mongoose.Types.ObjectId(therapistId);
-
-        // Fetch schedules based on the query
-        const schedules = await Sheidule.find({ therapistId: therapistObjectId, date: date });
-        console.log(schedules)
-
-        res.status(200).json(Response({
-            message: "Schedule found successfully",
-            data: schedules,
-            statusCode: 200,
-            status: "Okay"
-        }));
-    } catch (error) {
-        console.log('Error:', error.message);
-        res.status(500).json({
-            message: "Internal server error",
-            error: error.message
-        });
-    }
-};
-
-
 const matchTherapistWithSheidule = async (req, res) => {
     try {
         console.log(req.body.patientId);
@@ -278,6 +248,23 @@ const bookSchedule = async (req, res) => {
         res.status(500).json(Response({ message: "Internal server Error" }))
     }
 };
+
+const getSheiduleByTherapist = async (req, res) => {
+    try {
+        console.log("meow")
+        const date = req.params.date;
+        const modifiedDate = date.includes('T') ? date.split('T')[0] : date;
+        const therapistId = req.body.userId;
+        console.log(therapistId)
+        const therapistSchedule = await Sheidule.find({ therapistId: therapistId, date: modifiedDate });
+        if (!therapistSchedule) {
+            res.status(404).json(Response({ message: "No schedule found on this date", status: "Not Found", statusCode: 404 }))
+        }
+        res.status(200).json(Response({ message: "Therapist sheidule get succesfully", data: therapistSchedule, status: "Okay", statusCode: 200 }))
+    } catch (error) {
+        res.status(200).json(Response({ message: "Internal server error" }));
+    }
+}
 
 module.exports = {
     sheidule,
