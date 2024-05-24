@@ -93,6 +93,9 @@ const sheidule = async (req, res) => {
 const getSheidule = async (req, res) => {
     try {
         const therapistId = req.params.therapistId;
+        const date = req.params.date;
+        const modifiedDate = date.includes('T') ? date.split('T')[0] : date;
+        console.log(date)
         const search = Number(req.query.search) || "";
         const page = Number(req.query.page) || 1;
         const limit = Number(req.query.limit) || 2;
@@ -101,6 +104,7 @@ const getSheidule = async (req, res) => {
 
         const sheidule = await Sheidule.find({
             therapistId: therapistId,
+            date: modifiedDate,
             isBooked: { $ne: true }
         })
             .limit(limit)
@@ -110,10 +114,8 @@ const getSheidule = async (req, res) => {
 
         res.status(200).json(Response({
             message: "Sheidule has been fetched successfully",
-            data: {
-                type: "Sheidule",
-                attributes: sheidule
-            },
+            data: sheidule,
+            type: "Sheidule",
             status: "Success",
             statusCode: 200,
             pagination: {
@@ -235,6 +237,7 @@ const bookSchedule = async (req, res) => {
         const userId = req.body.userId;
         console.log("meow", userId)
         const sheidule = await Sheidule.findById(scheduleId);
+
         const apointment = await Apointment.findOne({ userId: userId });
         console.log("hiiiiiiiiii", apointment)
         apointment.scheduleId = scheduleId;
