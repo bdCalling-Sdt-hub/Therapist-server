@@ -1,3 +1,4 @@
+const pagination = require("../helpers/pagination");
 const Response = require("../helpers/response");
 const Apointment = require("../models/Apointment");
 const Package = require("../models/Package");
@@ -85,10 +86,39 @@ const schedule = async (req, res) => {
 
 const userApointmentHistory = async (req, res) => {
     try {
+        const limit = parseInt(req.query.limit) || 10;
+        const page = parseInt(req.query.page) || 1;
         const userId = req.body.userId;
-        console.log("slkjfdlksdjflkfj", userId)
+
+        // Validate userId
+        if (!userId) {
+            return res.status(400).json({ message: "User ID is required", statusCode: 400, status: "Bad Request" });
+        }
+
+        // Calculate skip value for pagination
+        const skip = (page - 1) * limit;
+
+        // Fetch appointments with pagination
+        const appointments = await Sheidule.find({ userId: userId })
+            .skip(skip)
+            .limit(limit);
+
+        // Count total appointments for pagination info
+        const totalAppointments = await Sheidule.countDocuments({ userId: userId });
+
+        // Prepare pagination info
+        const pageInfo = pagination(totalAppointments, limit, page);
+
+        res.status(200).json({
+            message: "Schedule retrieved successfully",
+            data: appointments,
+            statusCode: 200,
+            status: "Okay",
+            pagination: pageInfo
+        });
     } catch (error) {
-        res.status(200).json(Response({ message: "Internal server error" }))
+        console.error(error.message);
+        res.status(500).json({ message: "Internal server error", statusCode: 500, status: "Error" });
     }
 };
 
