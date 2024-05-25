@@ -83,9 +83,21 @@ const schedule = async (req, res) => {
 
 };
 
+const userApointmentHistory = async (req, res) => {
+    try {
+        const userId = req.body.userId;
+        console.log("slkjfdlksdjflkfj", userId)
+    } catch (error) {
+        res.status(200).json(Response({ message: "Internal server error" }))
+    }
+};
+
+
+
 module.exports = {
     getApointment,
     assignDoctor,
     assignTherapist,
     myAssignedList,
-}
+    userApointmentHistory
+};
