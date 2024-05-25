@@ -17,6 +17,10 @@ const getCurrentTime = () => {
 
 //Save message to database
 const saveMessage = (msg) => {
+    // console.log("hiiiiiiiii", msg)
+    // if (!msg.message) {
+    //     return;
+    // }
     const saveMessage = Message.create({
         message: msg.message,
         senderId: msg.senderId,
@@ -49,9 +53,14 @@ const getUserSpecificChat = async (req, res) => {
 
         // Find messages where senderId and participant match, or vice versa
         const query = {
-            $or: [
-                { senderId: senderId, participant: participant },
-                { senderId: participant, participant: senderId }
+            $and: [
+                {
+                    $or: [
+                        { senderId: senderId, participant: participant },
+                        { senderId: participant, participant: senderId }
+                    ]
+                },
+                // { message: { $exists: true } } // Ensure the message field exists
             ]
         };
 
@@ -109,7 +118,10 @@ const getChatList = async (req, res) => {
         // Group messages by chatId and retrieve only the last message for each chat
         const chatMessages = await Message.aggregate([
             {
-                $match: { chatId: { $in: chatIds } }
+                $match: {
+                    chatId: { $in: chatIds },
+                    message: { $exists: true }  // Ensure the message field exists
+                }
             },
             {
                 $sort: { createdAt: -1 }
@@ -121,6 +133,7 @@ const getChatList = async (req, res) => {
                 }
             }
         ]);
+
 
 
 
@@ -149,7 +162,6 @@ const getChatList = async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 };
-
 
 
 const fileMessage = async (req, res) => {

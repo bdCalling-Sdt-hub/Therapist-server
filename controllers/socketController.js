@@ -23,7 +23,7 @@ connectToDatabase();
 
 
 const socketIO = (io) => {
-    console.log(io)
+    console.log("ujhhj", io)
     console.log("Socket server is lenening on port 300")
     io.on('connection', (socket) => {
         console.log(`${getCurrentTime()} New client connected`);
@@ -35,7 +35,7 @@ const socketIO = (io) => {
         socket.on('message', async (msg, callback) => {
             try {
 
-                console.log(msg.participant);
+                console.log("hiiiiiiiii", msg.participant, "hoooooo");
 
                 // Search for existing chat between sender and receiver, regardless of the order of senderId and participant
                 const searchChat = await Chat.findOne({
@@ -49,6 +49,7 @@ const socketIO = (io) => {
                 if (!searchChat) {
                     // Create chat and wait for the result
                     const newChat = await createChat(msg);
+                    console.log(msg)
                     msg.chatId = newChat._id;
                 } else {
                     msg.chatId = searchChat._id;
@@ -59,6 +60,7 @@ const socketIO = (io) => {
 
                 // Send message to specific user
                 io.emit(`new::${msg.chatId}`, message);
+                console.log(message)
 
                 // Response back
                 callback({
@@ -81,4 +83,54 @@ const socketIO = (io) => {
 
 
 module.exports = socketIO;
+
+
+
+
+
+// socket.on('message', async (msg, callback) => {
+//     try {
+
+//         console.log("hiiiiiiiii", msg.participant, "hoooooo");
+
+//         // Search for existing chat between sender and receiver, regardless of the order of senderId and participant
+//         const searchChat = await Chat.findOne({
+//             $or: [
+//                 { senderId: msg.senderId, participant: msg.participant },
+//                 { senderId: msg.participant, participant: msg.senderId }
+//             ]
+//         });
+
+//         // If chat does not exist, create a new one
+//         if (!searchChat) {
+//             // Create chat and wait for the result
+//             const newChat = await createChat(msg);
+//             console.log(msg)
+//             msg.chatId = newChat._id;
+//         } else {
+//             msg.chatId = searchChat._id;
+//         }
+
+//         // Save message
+//         const message = await saveMessage(msg);
+
+//         // Send message to specific user
+//         io.emit(`new::${msg.chatId}`, message);
+//         console.log(message)
+
+//         // Response back
+//         callback({
+//             message: message,
+//             type: "Message",
+//         });
+
+//     } catch (error) {
+//         console.error(error.message);
+//         // Handle errors here
+//         callback({
+//             error: "An error occurred while processing the message",
+//             type: "Error",
+//         });
+//     }
+// });
 
