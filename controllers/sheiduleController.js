@@ -267,6 +267,20 @@ const getSheiduleByTherapist = async (req, res) => {
     } catch (error) {
         res.status(200).json(Response({ message: "Internal server error" }));
     }
+};
+
+const completedSession = async (req, res) => {
+    try {
+        const therapistId = req.body.userId;
+        console.log("hiiiiiiiiiii", therapistId)
+        const completedSession = await Sheidule.countDocuments({ therapistId: therapistId, completed: true })
+        const totalSession = await Sheidule.countDocuments({ therapistId: therapistId, completed: false })
+
+        console.log(completedSession)
+        res.status(200).json(Response({ message: "Completed session count", data: { completedSession: completedSession, totalSession: totalSession }, status: "Okay", stausCode: 200 }))
+    } catch (error) {
+        res.status(500).json(Response({ message: "Internal server error" }))
+    }
 }
 
 module.exports = {
@@ -277,5 +291,6 @@ module.exports = {
     apointmentDetailsForDoctors,
     createSheidule,
     bookSchedule,
-    getSheiduleByTherapist
+    getSheiduleByTherapist,
+    completedSession
 };
