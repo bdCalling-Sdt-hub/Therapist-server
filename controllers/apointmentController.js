@@ -100,8 +100,11 @@ const userApointmentHistory = async (req, res) => {
 
         // Fetch appointments with pagination
         const appointments = await Sheidule.find({ userId: userId })
+            .populate("therapistId")
             .skip(skip)
             .limit(limit);
+
+        console.log("hyiiiiiiii", appointments)
 
         // Count total appointments for pagination info
         const totalAppointments = await Sheidule.countDocuments({ userId: userId });

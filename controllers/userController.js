@@ -5,6 +5,7 @@ const bcrypt = require('bcryptjs');
 const { createJSONWebToken } = require('../helpers/jsonWebToken');
 const { deleteImage } = require("../helpers/deleteImage");
 const Therapist = require("../models/Therapist");
+const Apointment = require("../models/Apointment");
 
 //sign up user
 const signUp = async (req, res) => {
@@ -312,6 +313,19 @@ const updateProfile = async (req, res) => {
     }
 };
 
+const totalPatients = async (req, res) => {
+    try {
+        const therapistId = req.body.userId;
+        const patients = await Apointment.countDocuments({ therapistId: therapistId, isAdmin: { $ne: true } });
+        console.log(patients)
+        res.status(200).json(Response({ message: "Patients count retrieve succesfuly", statusCode: 200, status: "Okay", data: { patients: patients } }))
+
+    } catch (error) {
+        console.log(error.message)
+        res.status(500).json(Response({ message: "Internal server Error" }))
+    }
+}
+
 
 module.exports = {
     signUp,
@@ -321,5 +335,6 @@ module.exports = {
     changePassword,
     setPassword,
     updateProfile,
-    profile
+    profile,
+    totalPatients
 };
