@@ -89,7 +89,6 @@ const sheidule = async (req, res) => {
     }
 };
 
-
 const getSheidule = async (req, res) => {
     try {
         const therapistId = req.params.therapistId;
@@ -281,7 +280,7 @@ const completedSession = async (req, res) => {
     } catch (error) {
         res.status(500).json(Response({ message: "Internal server error" }))
     }
-}
+};
 
 module.exports = {
     sheidule,

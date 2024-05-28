@@ -124,7 +124,7 @@ const userApointmentHistory = async (req, res) => {
         const skip = (page - 1) * limit;
 
         // Construct query object
-        let query = { $or: [{ userId: userId }, { therapistId: userId }] };
+        let query = { $or: [{ userId: userId }, { therapistId: userId }], isBooked: true };
         if (date) {
             query.date = date;
         }

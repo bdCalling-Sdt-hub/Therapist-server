@@ -8,6 +8,7 @@ const Therapist = require("../models/Therapist");
 const Apointment = require("../models/Apointment");
 const Sheidule = require("../models/Sheidule");
 const pagination = require("../helpers/pagination");
+const { createChat } = require("./messageController");
 
 //sign up user
 const signUp = async (req, res) => {
@@ -48,7 +49,12 @@ const signUp = async (req, res) => {
         console.log(userDetails)
 
         // Call service function to register user
-        await userRegister(userDetails);
+        const registeredUser = await userRegister(userDetails);
+        // const createNewChat = createChat({
+
+        // })
+        console.log("hiiiiiiii", registeredUser)
+        io.emit(`new::${chatId}`, "Hi! I am In houose therapist from Mingaze.We will assign a Therapist to you, very soon.");
 
         res.status(200).json(Response({ message: "A verification email is sent to your email" }));
 
@@ -320,7 +326,7 @@ const totalPatients = async (req, res) => {
         const page = Number(req.query.page) || 1;
         const limit = Number(req.query.limit) || 5;
         const therapistId = req.body.userId;
-        const patients = await Sheidule.find({ therapistId: therapistId, isAdmin: { $ne: true } }).populate('userId')
+        const patients = await Sheidule.find({ therapistId: therapistId, isAdmin: { $ne: true }, isBooked: true }).populate('userId')
         const patientsCount = await Sheidule.countDocuments({ therapistId: therapistId, isAdmin: { $ne: true } });
         const patientInfo = pagination(patientsCount, limit, page);
         res.status(200).json(Response({ message: "Patients count retrieve succesfuly", statusCode: 200, status: "Okay", data: { patients: patients, pagination: patientInfo } }))
