@@ -7,32 +7,40 @@ const { forgotPassword } = require("../controllers/userController");
 const userRegister = async (userDetails) => {
     try {
         // Business logic for user registration
-        console.log("Received user details:", userDetails); // Remove the { userDetails }
-        console.log("Received user details:", userDetails.modifiedImage); // Remove the { userDetails }
+        console.log("Received user details:", userDetails);
+        console.log("Received user details (modifiedImage):", userDetails.modifiedImage);
+
         let { email, name } = userDetails;
+
         // Generate OTC (One-Time Code)
         const oneTimeCode = Math.floor(Math.random() * (999999 - 100000 + 1)) + 100000;
-        // Prepare email for activate user
+
+        // Prepare email for activating user
         const emailData = {
             email,
             subject: 'Account Activation Email',
             html: `
-          <h1>Hello, ${name}</h1>
-          <p>Your One Time Code is <h3>${oneTimeCode}</h3> to verify your email</p>
-          <small>This Code is valid for 3 minutes</small>
-          `
-        }
+                <h1>Hello, ${name}</h1>
+                <p>Your One Time Code is <h3>${oneTimeCode}</h3> to verify your email</p>
+                <small>This Code is valid for 3 minutes</small>
+            `
+        };
 
         // Send email
         try {
-            emailWithNodemailer(emailData);
+            await emailWithNodemailer(emailData);
         } catch (emailError) {
             console.error('Failed to send verification email', emailError);
-            res.status(500).json({ message: 'Error creating user', error: emailError });
+            throw new Error('Error sending verification email');
         }
+
+        // Add the one-time code to the user details
         let newUserDetails = { ...userDetails, oneTimeCode: oneTimeCode };
-        const user = await User.create(newUserDetails); // Remove the { userDetails } wrapper
-        // Set a timeout to update the oneTimeCode to null after 1 minute
+
+        // Create the user
+        const user = await User.create(newUserDetails);
+
+        // Set a timeout to update the oneTimeCode to null after 3 minutes
         setTimeout(async () => {
             try {
                 user.oneTimeCode = null;
@@ -42,12 +50,14 @@ const userRegister = async (userDetails) => {
                 console.error('Error updating oneTimeCode:', error);
             }
         }, 180000); // 3 minutes in milliseconds
+
+        return user; // Return the newly created user
+
     } catch (error) {
         console.error("Error in userRegister service:", error.message);
         throw new Error("Error occurred while registering user");
     }
 };
-
 const userLogin = async ({ email, password, user }) => {
     try {
         const expiresInOneYear = 365 * 24 * 60 * 60; // seconds in 1 year

@@ -8,56 +8,82 @@ const Therapist = require("../models/Therapist");
 const Apointment = require("../models/Apointment");
 const Sheidule = require("../models/Sheidule");
 const pagination = require("../helpers/pagination");
-const { createChat } = require("./messageController");
+const { createChat, saveMessage } = require("./messageController");
 
-//sign up user
+// const { validationResult } = require('express-validator'); // For input validation
+
 const signUp = async (req, res) => {
     try {
         const { name, email, password, countryCode, phone, dateOfBirth } = req.body;
         const image = req.file;
-        console.log("image-----", image)
 
-
-        // Validate request body
+        // Additional validations
         if (!name) {
-            return res.status(400).json(Response({ message: "Name is required" }));
+            return res.status(400).json({ message: "Name is required" });
         }
 
         if (!email) {
-            return res.status(400).json(Response({ message: "Email is required" }));
+            return res.status(400).json({ message: "Email is required" });
         }
 
         if (!password) {
-            return res.status(400).json(Response({ message: "Password is required" }));
-        };
-
-        const user = await User.findOne({ email });
-        if (user) {
-            return res.status(400).json(Response({ message: "User already exists" }));
+            return res.status(400).json({ message: "Password is required" });
         }
 
-        let userDetails = {
+        // Check if user already exists
+        const existingUser = await User.findOne({ email });
+        if (existingUser) {
+            return res.status(400).json({ message: "User already exists" });
+        }
+
+        // Hash the password
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        // Prepare user details
+        const userDetails = {
             name,
             email,
-            password,
-            image,
+            password: hashedPassword,
             countryCode,
             phone,
-            // dateOfBirth
-        }
-
-        console.log(userDetails)
+            dateOfBirth,
+            image: image ? image.path : null // Assuming you're using multer for file uploads
+        };
 
         // Call service function to register user
         const registeredUser = await userRegister(userDetails);
-        // const createNewChat = createChat({
 
-        // })
-        console.log("hiiiiiiii", registeredUser)
-        io.emit(`new::${chatId}`, "Hi! I am In houose therapist from Mingaze.We will assign a Therapist to you, very soon.");
+        // Check if user registration was successful
+        if (!registeredUser || !registeredUser._id) {
+            return res.status(500).json({ message: "User registration failed" });
+        }
 
-        res.status(200).json(Response({ message: "A verification email is sent to your email" }));
+        // Create a new chat for the user
+        const newChat = await createChat({
+            participant: registeredUser._id,
+            senderId: "664c3dcafe87e1150104adc7"
+        });
+        console.log(newChat)
 
+        // Check if chat creation was successful
+        if (!newChat || !newChat._id) {
+            return res.status(500).json({ message: "Chat creation failed" });
+        }
+
+        // Emit socket event after user registration
+        // Save message
+        let msg = {
+            message: "Hi! I am an in-house therapist from Mingaze. We will assign a Therapist to you very soon.",
+            senderId: newChat.senderId,
+            participant: newChat.participant,
+            chatId: newChat._id
+        }
+        const message = await saveMessage(msg);
+        // const message = "Hi! I am an in-house therapist from Mingaze. We will assign a Therapist to you very soon."
+        io.emit(`new::${newChat._id}`, message);
+
+        // Send response
+        res.status(200).json({ message: "A verification email is sent to your email" });
     } catch (error) {
         console.error("Error in signUp controller:", error);
         res.status(500).json({ error: "Server error" });
@@ -327,7 +353,7 @@ const totalPatients = async (req, res) => {
         const limit = Number(req.query.limit) || 5;
         const therapistId = req.body.userId;
         const patients = await Sheidule.find({ therapistId: therapistId, isAdmin: { $ne: true }, isBooked: true }).populate('userId')
-        const patientsCount = await Sheidule.countDocuments({ therapistId: therapistId, isAdmin: { $ne: true } });
+        const patientsCount = await Sheidule.countDocuments({ therapistId: therapistId, isAdmin: { $ne: true }, isBooked: true });
         const patientInfo = pagination(patientsCount, limit, page);
         res.status(200).json(Response({ message: "Patients count retrieve succesfuly", statusCode: 200, status: "Okay", data: { patients: patients, pagination: patientInfo } }))
 
