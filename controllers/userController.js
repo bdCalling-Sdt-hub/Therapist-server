@@ -6,6 +6,8 @@ const { createJSONWebToken } = require('../helpers/jsonWebToken');
 const { deleteImage } = require("../helpers/deleteImage");
 const Therapist = require("../models/Therapist");
 const Apointment = require("../models/Apointment");
+const Sheidule = require("../models/Sheidule");
+const pagination = require("../helpers/pagination");
 
 //sign up user
 const signUp = async (req, res) => {
@@ -315,10 +317,13 @@ const updateProfile = async (req, res) => {
 
 const totalPatients = async (req, res) => {
     try {
+        const page = Number(req.query.page) || 1;
+        const limit = Number(req.query.limit) || 5;
         const therapistId = req.body.userId;
-        const patients = await Apointment.countDocuments({ therapistId: therapistId, isAdmin: { $ne: true } });
-        console.log(patients)
-        res.status(200).json(Response({ message: "Patients count retrieve succesfuly", statusCode: 200, status: "Okay", data: { patients: patients } }))
+        const patients = await Sheidule.find({ therapistId: therapistId, isAdmin: { $ne: true } }).populate('userId')
+        const patientsCount = await Sheidule.countDocuments({ therapistId: therapistId, isAdmin: { $ne: true } });
+        const patientInfo = pagination(patientsCount, limit, page);
+        res.status(200).json(Response({ message: "Patients count retrieve succesfuly", statusCode: 200, status: "Okay", data: { patients: patients, pagination: patientInfo } }))
 
     } catch (error) {
         console.log(error.message)
@@ -328,10 +333,21 @@ const totalPatients = async (req, res) => {
 
 const patients = async (req, res) => {
     try {
-        const patients = await User.find({ isAdmin: false, answer: true })
+        const patients = await User.find({ isAdmin: false, answer: true, role: "Patient" })
         res.status(200).json(Response({ message: "Patients retrieve succesfully", status: "Okay", statusCode: 200, data: patients }))
     } catch (error) {
-        res.status(500).json(Response({ message: "Internal server Error" }))
+        res.status(500).json(Response({ message: "Internal server Error" }));
+    }
+};
+
+const singlePatients = async (req, res) => {
+    try {
+        const patientId = req.params.patientId;
+        const patient = await User.findOne({ _id: patientId, isAdmin: false });
+        console.log(patientId)
+        res.status(200).json(Response({ message: "Patient found succesfuly", data: patient, status: "Okay", statusCode: 200 }))
+    } catch (error) {
+        res.status(500).json(Response({ message: "Internal server error" }))
     }
 };
 
@@ -346,5 +362,6 @@ module.exports = {
     updateProfile,
     profile,
     totalPatients,
-    patients
+    patients,
+    singlePatients
 };

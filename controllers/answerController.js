@@ -9,7 +9,7 @@ const answer = async (req, res) => {
         console.log(answerData);
         const user = await User.findById(req.body.userId);
         if (user.answer == true) {
-            res.status(400).json(Response({ message: "You already answered" }));
+            return res.status(400).json(Response({ message: "You already answered" }));
         }
 
         const newAnswer = await Answer({
