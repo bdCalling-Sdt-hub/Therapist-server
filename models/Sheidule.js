@@ -7,7 +7,7 @@ const sheiduleSchema = new mongoose.Schema({
     therapistId: { type: mongoose.Schema.Types.ObjectId, ref: "Therapist", required: true },
     completed: { type: Boolean, default: false },
     isBooked: { type: Boolean, default: false },
-    userId: { type: mongoose.Schema.Types.ObjectId, required: false }
+    userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: false }
 },
     { timestamps: true },
 );

@@ -175,11 +175,11 @@ const assignTherapistToPatient = async (req, res) => {
             return res.status(401).json(Response({ message: "Unauthorized", type: "Admin", status: "Unauthorized", statusCode: 401 }))
         }
         const patientId = req.body.patientId;
-        const therapistId = req.params.therapistId;
+        const therapistId = req.body.therapistId;
         const patient = await Apointment.findOne({ userId: patientId });
         const therapist = await Therapist.findById(therapistId);
-        console.log(patient);
-        console.log(therapist);
+        console.log("h-------", patient);
+        console.log("h-------", therapist);
         if (!patient) {
             return res.status(400).json(Response({ message: "Patient not found", type: "Patient", status: "Not Found", statusCode: 400 }))
         }

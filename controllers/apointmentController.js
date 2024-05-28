@@ -45,14 +45,15 @@ const assignTherapist = async (req, res) => {
     try {
         const therapist = req.body.therapistId;
         const user = req.params.userId;
-        console.log(user)
-        console.log(therapist)
+        // console.log("hiii", user)
+        // console.log("hello", therapist)
         const apointment = await Apointment.create({
             userId: user,
             therapistId: therapist
         });
         res.status(200).json(Response({ "message": "Therapist assign succesfuly", statusCode: 200, status: "Okay", data: apointment }))
     } catch (error) {
+        console.log(error.message)
         res.status(500).json("Internal server error")
     }
 };
@@ -88,42 +89,85 @@ const userApointmentHistory = async (req, res) => {
     try {
         const limit = parseInt(req.query.limit) || 10;
         const page = parseInt(req.query.page) || 1;
+        const date = req.query.date;
         const userId = req.body.userId;
+
+        // Log userId for debugging
+        console.log("User ID:", userId);
 
         // Validate userId
         if (!userId) {
-            return res.status(400).json({ message: "User ID is required", statusCode: 400, status: "Bad Request" });
+            return res.status(400).json({
+                message: "User ID is required",
+                statusCode: 400,
+                status: "Bad Request"
+            });
+        }
+
+        // Validate limit and page number
+        if (isNaN(limit) || limit < 1) {
+            return res.status(400).json({
+                message: "Invalid limit number",
+                statusCode: 400,
+                status: "Bad Request"
+            });
+        }
+        if (isNaN(page) || page < 1) {
+            return res.status(400).json({
+                message: "Invalid page number",
+                statusCode: 400,
+                status: "Bad Request"
+            });
         }
 
         // Calculate skip value for pagination
         const skip = (page - 1) * limit;
 
+        // Construct query object
+        let query = { $or: [{ userId: userId }, { therapistId: userId }] };
+        if (date) {
+            query.date = date;
+        }
+
         // Fetch appointments with pagination
-        const appointments = await Sheidule.find({ userId: userId })
+        const appointments = await Sheidule.find(query)
             .populate("therapistId")
+            .populate("userId")
             .skip(skip)
             .limit(limit);
 
-        console.log("hyiiiiiiii", appointments)
+        // Check if appointments were found
+        if (!appointments || appointments.length === 0) {
+            return res.status(404).json(Response({
+                message: "No appointments found",
+                statusCode: 404,
+                status: "Not Found"
+            }));
+        }
 
         // Count total appointments for pagination info
-        const totalAppointments = await Sheidule.countDocuments({ userId: userId });
+        const totalAppointments = await Sheidule.countDocuments(query);
 
         // Prepare pagination info
         const pageInfo = pagination(totalAppointments, limit, page);
 
-        res.status(200).json({
+        res.status(200).json(Response({
             message: "Schedule retrieved successfully",
             data: appointments,
             statusCode: 200,
             status: "Okay",
             pagination: pageInfo
-        });
+        }));
     } catch (error) {
-        console.error(error.message);
-        res.status(500).json({ message: "Internal server error", statusCode: 500, status: "Error" });
+        console.error("Error retrieving appointment history:", error.message);
+        res.status(500).json({
+            message: "Internal server error",
+            statusCode: 500,
+            status: "Error"
+        });
     }
 };
+
 
 
 

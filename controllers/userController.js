@@ -324,7 +324,16 @@ const totalPatients = async (req, res) => {
         console.log(error.message)
         res.status(500).json(Response({ message: "Internal server Error" }))
     }
-}
+};
+
+const patients = async (req, res) => {
+    try {
+        const patients = await User.find({ isAdmin: false, answer: true })
+        res.status(200).json(Response({ message: "Patients retrieve succesfully", status: "Okay", statusCode: 200, data: patients }))
+    } catch (error) {
+        res.status(500).json(Response({ message: "Internal server Error" }))
+    }
+};
 
 
 module.exports = {
@@ -336,5 +345,6 @@ module.exports = {
     setPassword,
     updateProfile,
     profile,
-    totalPatients
+    totalPatients,
+    patients
 };
