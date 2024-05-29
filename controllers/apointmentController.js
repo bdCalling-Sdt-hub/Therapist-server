@@ -23,23 +23,23 @@ const getApointment = async (req, res) => {
 
 };
 
-const assignDoctor = async (req, res) => {
-    try {
-        console.log("meow")
-        const doctorId = req.body.doctorId;
-        const appointment = await Apointment.findById(req.params.id);
-        console.log(appointment);
-        if (!appointment) {
-            res.status(404).json(Response({ message: "Appointment not found", type: "Appointment", status: "Not Found", statusCode: 404 }));
-            return;
-        }
-        appointment.referTo = req.body.doctorId;
-        await appointment.save();
-        res.status(200).json(Response({ message: "Doctor assigned successfully", data: appointment, type: "Appointment", status: "OK", statusCode: 200 }));
-    } catch (error) {
-        res.status(500).json(Response({ message: "Internal Server Error", type: "Appointment", status: "Internal Server Error", statusCode: 500 }));
-    }
-};
+// const assignDoctor = async (req, res) => {
+//     try {
+//         console.log("meow")
+//         const doctorId = req.body.doctorId;
+//         const appointment = await Apointment.findById(req.params.id);
+//         console.log(appointment);
+//         if (!appointment) {
+//             res.status(404).json(Response({ message: "Appointment not found", type: "Appointment", status: "Not Found", statusCode: 404 }));
+//             return;
+//         }
+//         appointment.referTo = req.body.doctorId;
+//         await appointment.save();
+//         res.status(200).json(Response({ message: "Doctor assigned successfully", data: appointment, type: "Appointment", status: "OK", statusCode: 200 }));
+//     } catch (error) {
+//         res.status(500).json(Response({ message: "Internal Server Error", type: "Appointment", status: "Internal Server Error", statusCode: 500 }));
+//     }
+// };
 
 const assignTherapist = async (req, res) => {
     try {
@@ -51,7 +51,7 @@ const assignTherapist = async (req, res) => {
             userId: user,
             therapistId: therapist
         });
-        res.status(200).json(Response({ "message": "Therapist assign succesfuly", statusCode: 200, status: "Okay", data: apointment }))
+        res.status(200).json(Response({ message: "Therapist assign succesfuly", statusCode: 200, status: "Okay", data: apointment }))
     } catch (error) {
         console.log(error.message)
         res.status(500).json("Internal server error")
@@ -173,7 +173,7 @@ const userApointmentHistory = async (req, res) => {
 
 module.exports = {
     getApointment,
-    assignDoctor,
+    // assignDoctor,
     assignTherapist,
     myAssignedList,
     userApointmentHistory

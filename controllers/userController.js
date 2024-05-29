@@ -47,7 +47,7 @@ const signUp = async (req, res) => {
             countryCode,
             phone,
             dateOfBirth,
-            image: image ? image.path : null // Assuming you're using multer for file uploads
+            image: image // Assuming you're using multer for file uploads
         };
 
         // Call service function to register user
@@ -115,11 +115,11 @@ const signIn = async (req, res, next) => {
         }
 
         // Compare the provided password with the stored hashed password
-        const isPasswordValid = await bcrypt.compare(password, user.password);
+        const isPasswordValid = bcrypt.compare(password, user.password);
         console.log("---------------", isPasswordValid)
 
         if (!isPasswordValid) {
-            res.status(401).json(Response({ statusCode: 401, message: 'Invalid password', status: "Failed" }));
+            return res.status(401).json(Response({ statusCode: 401, message: 'Invalid password', status: "Failed" }));
         }
 
         // Call userLogin service function

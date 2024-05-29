@@ -33,11 +33,13 @@ const answer = async (req, res) => {
 const verifyAnswerByAdmin = async (req, res) => {
     try {
         const userId = req.params.userId;
+        console.log("------------->>>>>>>>>")
         console.log(userId)
         const answeredByUser = await Answer.find({ userId: userId });
+        console.log(answeredByUser)
         res.status(200).json(Response({ message: "User answer succesfuly", data: answeredByUser, status: "Okay", statusCode: 200 }))
     } catch (error) {
         res.status(500).json(Response({ message: "Internal server Error" }));
     }
-}
+};
 module.exports = { answer, verifyAnswerByAdmin };

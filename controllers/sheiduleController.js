@@ -1,4 +1,5 @@
 const Response = require("../helpers/response");
+const { getCurrentDateAndTimeFormatted, addMinutes } = require("../helpers/timeChecker");
 const Apointment = require("../models/Apointment");
 const Sheidule = require("../models/Sheidule");
 const Therapist = require("../models/Therapist");
@@ -234,6 +235,7 @@ const bookSchedule = async (req, res) => {
     try {
         const scheduleId = req.params.scheduleId;
         const userId = req.body.userId;
+        const bookingType = req.body.bookingType;
         console.log("meow", userId)
         const sheidule = await Sheidule.findById(scheduleId);
 
@@ -241,6 +243,7 @@ const bookSchedule = async (req, res) => {
         console.log("hiiiiiiiiii", apointment)
         apointment.scheduleId = scheduleId;
         sheidule.userId = userId;
+        sheidule.bookingType = bookingType;
         sheidule.isBooked = true;
         await sheidule.save();
         await apointment.save();
@@ -282,6 +285,43 @@ const completedSession = async (req, res) => {
     }
 };
 
+const checkValidSchedule = async (req, res) => {
+    try {
+        const userId = req.body.userId;
+        const therapistId = req.params.therapistId;
+        const { formattedDate, formattedTime } = getCurrentDateAndTimeFormatted();
+
+        console.log(`Formatted Date: ${formattedDate}, Formatted Time: ${formattedTime}`);
+
+        const schedule = await Sheidule.findOne({
+            $or: [
+                { userId: userId },
+                { therapistId: therapistId }
+            ]
+        });
+
+        console.log(schedule);
+
+        if (!schedule) {
+            return res.status(404).json(Response({ message: "Schedule not found", statusCode: 200, status: "Okay" }));
+        }
+
+        const scheduleDate = schedule.date;
+        const scheduleFromTime = schedule.time[0].from;
+        const scheduleFromTimePlus40Minutes = addMinutes(scheduleFromTime, 40);
+
+        if (formattedDate !== scheduleDate || formattedTime < scheduleFromTime || formattedTime > scheduleFromTimePlus40Minutes) {
+            return res.status(400).json(Response({ message: "You don't have a schedule at this time", statusCode: 200, status: "Okay" }));
+        }
+
+        return res.status(200).json(Response({ message: "Schedule is valid", statusCode: 200, status: "Okay" }));
+
+    } catch (error) {
+        console.error(error.message);
+        res.status(500).json(Response({ message: "Internal Server Error" }));
+    }
+};
+
 module.exports = {
     sheidule,
     getSheidule,
@@ -291,5 +331,6 @@ module.exports = {
     createSheidule,
     bookSchedule,
     getSheiduleByTherapist,
-    completedSession
+    completedSession,
+    checkValidSchedule
 };
