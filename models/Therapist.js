@@ -31,6 +31,7 @@ const therapistSchema = new mongoose.Schema({
     },
     isVerified: { type: Boolean, default: false },
     oneTimeCode: { type: String, required: false, default: null },
+    rating: { type: Number, required: false }
 }, {
     toJSON: {
         transform(doc, ret) {

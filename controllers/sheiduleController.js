@@ -2,6 +2,7 @@ const Response = require("../helpers/response");
 const { getCurrentDateAndTimeFormatted, addMinutes } = require("../helpers/timeChecker");
 const Apointment = require("../models/Apointment");
 const Sheidule = require("../models/Sheidule");
+const Subscription = require("../models/Subscription");
 const Therapist = require("../models/Therapist");
 const User = require("../models/User");
 const mongoose = require('mongoose');
@@ -236,23 +237,59 @@ const bookSchedule = async (req, res) => {
         const scheduleId = req.params.scheduleId;
         const userId = req.body.userId;
         const bookingType = req.body.bookingType;
-        console.log("meow", userId)
-        const sheidule = await Sheidule.findById(scheduleId);
+        console.log("meow", userId);
 
-        const apointment = await Apointment.findOne({ userId: userId });
-        console.log("hiiiiiiiiii", apointment)
-        apointment.scheduleId = scheduleId;
-        sheidule.userId = userId;
-        sheidule.bookingType = bookingType;
-        sheidule.isBooked = true;
-        await sheidule.save();
-        await apointment.save();
-        res.status(200).json({ message: "Schedule booked succesfuly", data: sheidule, status: "Okay", stausCode: 200 })
+        // Find the schedule by its ID
+        const schedule = await Sheidule.findById(scheduleId);
+        if (!schedule) {
+            return res.status(404).json(Response({ message: "Schedule not found", status: "Error", statusCode: 404 }));
+        }
+
+        // Find the appointment for the user
+        let appointment = await Apointment.findOne({ userId: userId });
+        if (!appointment) {
+            appointment = new Apointment({ userId: userId });
+        }
+        console.log("hiiiiiiiiii", appointment);
+
+        // Find the subscription package for the user
+        const package = await Subscription.findOne({ userId: userId });
+        if (!package) {
+            return res.status(404).json(Response({ message: "Subscription package not found", status: "Error", statusCode: 404 }));
+        }
+        console.log(package);
+
+        // Check if there are available counts for the booking type
+        if ((bookingType === "Video" && package.videoCount === 0) ||
+            (bookingType === "Audio" && package.audioCount === 0)) {
+            return res.status(400).json(Response({ message: "Please buy a package", status: "Error", statusCode: 400 }));
+        }
+
+        // Update schedule and appointment
+        appointment.scheduleId = scheduleId;
+        schedule.userId = userId;
+        schedule.bookingType = bookingType;
+        schedule.isBooked = true;
+
+        await schedule.save();
+        await appointment.save();
+
+        // Update the subscription counts based on booking type
+        if (bookingType === "Video") {
+            package.videoCount -= 1;
+        } else if (bookingType === "Audio") {
+            package.audioCount -= 1;
+        }
+
+        await package.save();
+
+        res.status(200).json(Response({ message: "Schedule booked successfully", data: schedule, status: "Okay", statusCode: 200 }));
     } catch (error) {
-        console.log(error.message)
-        res.status(500).json(Response({ message: "Internal server Error" }))
+        console.error(error.message);
+        res.status(500).json(Response({ message: "Internal Server Error" }));
     }
 };
+
 
 const getSheiduleByTherapist = async (req, res) => {
     try {
@@ -321,6 +358,7 @@ const checkValidSchedule = async (req, res) => {
         res.status(500).json(Response({ message: "Internal Server Error" }));
     }
 };
+
 
 module.exports = {
     sheidule,

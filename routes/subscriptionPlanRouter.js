@@ -9,6 +9,6 @@ const { isValidUser } = require('../middlewares.js/auth');
 // routes
 router.post('/create-plan', createSubscription);
 router.get('/get-plan', getSubscription);
-router.post('/buy-plan/:planId', buySubscription);
+router.post('/buy-plan/:planId', isValidUser, buySubscription);
 
 module.exports = router;

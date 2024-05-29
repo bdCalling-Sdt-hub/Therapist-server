@@ -9,26 +9,22 @@ const subscriptionPlanSchema = new mongoose.Schema({
         type: Number,
         required: true
     },
+    videoCount: {
+        type: Number,
+        required: false
+    },
+    audioCount: {
+        type: Number,
+        required: false
+    },
     duration: {
-        type: Number,
-        required: true
-    },
-    liveSession: {
-        type: Number,
-        required: true
-    },
-    liveSessionDuaration: {
-        type: Number,
-        required: true
-    },
-    weeklyResponse: {
         type: Number,
         required: true
     },
     description: {
         type: String,
         required: false
-    }
+    },
 }, {
     timestamps: true,
 });

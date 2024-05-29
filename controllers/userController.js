@@ -383,6 +383,16 @@ const singlePatients = async (req, res) => {
     }
 };
 
+const singleUser = async (req, res) => {
+    try {
+        const userId = req.params.userId;
+        const user = await User.findById(userId) || await Therapist.findById(userId);
+        res.status(200).json(Response({ message: "User retrieve succesfuly", data: user, status: "Okay", statusCode: 200 }))
+    } catch (error) {
+        res.status(500).json(Response({ message: "Internal server Error" }))
+    }
+};
+
 
 module.exports = {
     signUp,
@@ -395,5 +405,6 @@ module.exports = {
     profile,
     totalPatients,
     patients,
-    singlePatients
+    singlePatients,
+    singleUser
 };

@@ -19,6 +19,12 @@ const subscriptionSchema = new mongoose.Schema({
         type: Date,
         required: true
     },
+    videoCount: {
+        type: Number,
+    },
+    audioCount: {
+        type: Number,
+    },
     payment: {
         type: String,
         required: true,

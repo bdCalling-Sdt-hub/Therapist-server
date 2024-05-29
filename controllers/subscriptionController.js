@@ -5,9 +5,9 @@ const Subscription = require("../models/Subscription");
 const createSubscription = async (req, res) => {
     console.log("createSubscription");
     try {
-        const { title, price, duration, description, liveSession, liveSessionDuaration, weeklyResponse } = req.body;
+        const { title, price, duration, description, liveSession, liveSessionDuaration, weeklyResponse, videoCount, audioCount } = req.body;
         console.log(weeklyResponse);
-        const suncriptionPlan = await SubsCriptionPlan.create({ title, price, duration, description, liveSession, liveSessionDuaration, weeklyResponse });
+        const suncriptionPlan = await SubsCriptionPlan.create({ title, price, duration, description, liveSession, liveSessionDuaration, weeklyResponse, videoCount, audioCount });
         res.status(201).json(Response({ message: "Subscription plan created successfully", status: "Created", stausCode: 201, data: suncriptionPlan }))
     } catch (error) {
         res.status(500).json(Response({ message: "Error creating plan", status: "Error", stausCode: 500 }))
@@ -51,8 +51,11 @@ const buySubscription = async (req, res) => {
     try {
         const planId = req.params.planId;
         const transactionId = req.body.transactionId;
+        const userId = req.body.userId;
+        const payment = req.body.payment;
         console.log(transactionId);
         const subcriptionPlan = await SubsCriptionPlan.findById(planId);
+        console.log(subcriptionPlan)
         if (!subcriptionPlan) {
             res.status(404).json(Response({ message: "Plan not found", status: "Error", stausCode: 404 }))
         }
@@ -61,9 +64,11 @@ const buySubscription = async (req, res) => {
 
         const subscription = await Subscription.create({
             planId,
-            userId: "662a321f16eb3ba97175de7f",
-            payment: req.body.payment,
+            userId: userId,
+            payment: payment,
             startDate,
+            videoCount: subcriptionPlan.videoCount,
+            audioCount: subcriptionPlan.audioCount,
             endDate,
             transactionId: req.body.transactionId
         });
@@ -73,7 +78,7 @@ const buySubscription = async (req, res) => {
         console.log(error.message);
         res.status(500).json(Response({ message: "Error buying plan", status: "Error", stausCode: 500 }))
     }
-}
+};
 
 const useSubcription = async (req, res) => {
     console.log("useSubcription");
