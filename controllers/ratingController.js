@@ -12,10 +12,18 @@ const createRating = async (req, res) => {
 
         const userId = req.body.userId;
         const rating = req.body.rating;
+        let modifiedRating;
+        if (rating === "Meow1") {
+            modifiedRating = 1;
+        } else if (rating === "Meow2") {
+            modifiedRating = 2
+        } else if (rating === "Meow3") {
+            modifiedRating = 3
+        }
         const newRating = await Rating.create({
             userId: userId,
             therapistId: therapistId,
-            rating: rating
+            rating: modifiedRating
         });
         const therapistRatings = await Rating.find({ therapistId: therapistId });
         const therapistRatingsCount = await Rating.countDocuments({ therapistId: therapistId });
