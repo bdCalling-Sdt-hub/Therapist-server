@@ -8,7 +8,8 @@ const sheiduleSchema = new mongoose.Schema({
     completed: { type: Boolean, default: false },
     isBooked: { type: Boolean, default: false },
     bookingType: { type: String, enum: ["Video", "Audio", "Message"], default: "Message" },
-    userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: false }
+    userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: false },
+    therapistPayment: { type: Number, required: false }
 },
     { timestamps: true },
 );

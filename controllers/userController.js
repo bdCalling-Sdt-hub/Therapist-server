@@ -61,7 +61,7 @@ const signUp = async (req, res) => {
         // Create a new chat for the user
         const newChat = await createChat({
             participant: registeredUser._id,
-            senderId: "664c3dcafe87e1150104adc7"
+            senderId: "665850d41d7fd99fc9113f5c"
         });
         console.log(newChat)
 
@@ -90,16 +90,15 @@ const signUp = async (req, res) => {
     }
 };
 
-//Sign in user
 const signIn = async (req, res, next) => {
     try {
         // Get email and password from req.body
         const { email, password } = req.body;
-        console.log("--------Meow", email)
+        console.log("--------Meow", email);
 
         // Find the user by email
         const user = await User.findOne({ email });
-        console.log("-------------->>>>>", user)
+        console.log("-------------->>>>>", user);
 
         if (!user) {
             return res.status(404).json(Response({ statusCode: 404, message: 'User not found', status: "Failed" }));
@@ -115,8 +114,8 @@ const signIn = async (req, res, next) => {
         }
 
         // Compare the provided password with the stored hashed password
-        const isPasswordValid = bcrypt.compare(password, user.password);
-        console.log("---------------", isPasswordValid)
+        const isPasswordValid = await bcrypt.compare(password, user.password); // Await the comparison
+        console.log("---------------", isPasswordValid);
 
         if (!isPasswordValid) {
             return res.status(401).json(Response({ statusCode: 401, message: 'Invalid password', status: "Failed" }));

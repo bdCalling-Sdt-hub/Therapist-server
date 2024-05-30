@@ -194,8 +194,8 @@ const acceptTherapistRequest = async (req, res) => {
 const getTherapist = async (req, res) => {
     console.log("get therapist");
     try {
-        const limit = parseInt(req.query.limit) || 2; // Default limit is 10, or use the provided limit if any
-        const page = parseInt(req.query.page) || 3; // Default page is 1, or use the provided page if any
+        const limit = parseInt(req.query.limit) || 1; // Default limit is 10, or use the provided limit if any
+        const page = parseInt(req.query.page) || 1; // Default page is 1, or use the provided page if any
 
         const therapistCount = await Therapist.countDocuments();
         const pageInfo = pagination(therapistCount, limit, page);

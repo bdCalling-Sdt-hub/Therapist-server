@@ -31,6 +31,7 @@ const subscriptionSchema = new mongoose.Schema({
         enum: ["Paid", "Unpaid", "Trail"], // Enum values
         default: "Unpaid" // Default value if not provided
     },
+    price: { type: Number, required: true },
     status: { type: String, required: true, enum: ["Active", "Inactive"], default: "Active" },
     trasactionId: { type: String, required: false }
 }, {

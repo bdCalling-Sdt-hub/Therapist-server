@@ -5,6 +5,7 @@ const Sheidule = require("../models/Sheidule");
 const Subscription = require("../models/Subscription");
 const Therapist = require("../models/Therapist");
 const User = require("../models/User");
+const pagination = require("../helpers/pagination");
 const mongoose = require('mongoose');
 
 // const sheidule = async (req, res) => {
@@ -359,6 +360,59 @@ const checkValidSchedule = async (req, res) => {
     }
 };
 
+const afterSessionCalculate = async (req, res) => {
+    try {
+        const scheduleId = req.params.scheduleId;
+        const status = req.body.status;
+
+        // Retrieve the schedule by ID
+        const schedule = await Sheidule.findById(scheduleId);
+        if (!schedule) {
+            return res.status(404).json(Response({ message: "Schedule not found", status: "Not Found", statusCode: 404 }));
+        }
+
+        // Retrieve the user's subscription by userId from the schedule
+        const userSubscription = await Subscription.findOne({ userId: schedule.userId });
+        if (!userSubscription) {
+            return res.status(404).json(Response({ message: "Subscription not found", status: "Not Found", statusCode: 404 }));
+        }
+
+        let therapistPayment;
+
+        // Calculate the therapist payment based on the status
+        if (status === "VideoCompleted") {
+            therapistPayment = userSubscription.price * 0.45;
+        } else if (status === "AudioCompleted") {
+            therapistPayment = userSubscription.price * 0.40;
+        } else {
+            return res.status(400).json(Response({ message: "Invalid status", status: "Bad Request", statusCode: 400 }));
+        }
+
+        // Update the schedule with the therapist payment and mark it as completed
+        schedule.therapistPayment = therapistPayment;
+        schedule.completed = true;
+        await schedule.save();
+
+        // Send a successful response
+        res.status(200).json(Response({ message: "Session completed successfully", status: "Okay", statusCode: 200, data: schedule }));
+    } catch (error) {
+        console.error(error.message);
+        res.status(500).json(Response({ message: "Internal server error", status: "Error", statusCode: 500 }));
+    }
+};
+
+const therapistPayment = async (req, res) => {
+    try {
+        const page = Number(req.query.page) || 1;
+        const limit = Number(req.query.limit) | 10;
+        const therapist = await Sheidule.find({ completed: true }).populate("therapistId");
+        const therapistCount = await Sheidule.countDocuments({ completed: true });
+        const info = pagination(therapistCount, limit, page);
+        res.status(200).json(Response({ message: "Need to payment therapist", data: therapist, pagination: info, status: "Okay", stausCode: 200 }));
+    } catch (error) {
+        res.status(500).json(Response({ message: "Internal server Error" }))
+    }
+}
 
 module.exports = {
     sheidule,
@@ -370,5 +424,7 @@ module.exports = {
     bookSchedule,
     getSheiduleByTherapist,
     completedSession,
-    checkValidSchedule
+    checkValidSchedule,
+    afterSessionCalculate,
+    therapistPayment
 };

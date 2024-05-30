@@ -1,3 +1,4 @@
+const { response } = require("../app");
 const Response = require("../helpers/response");
 const SubsCriptionPlan = require("../models/SubsCriptionPlan");
 const Subscription = require("../models/Subscription");
@@ -5,20 +6,20 @@ const Subscription = require("../models/Subscription");
 const createSubscription = async (req, res) => {
     console.log("createSubscription");
     try {
-        const { title, price, duration, description, liveSession, liveSessionDuaration, weeklyResponse, videoCount, audioCount } = req.body;
-        console.log(weeklyResponse);
-        const suncriptionPlan = await SubsCriptionPlan.create({ title, price, duration, description, liveSession, liveSessionDuaration, weeklyResponse, videoCount, audioCount });
-        res.status(201).json(Response({ message: "Subscription plan created successfully", status: "Created", stausCode: 201, data: suncriptionPlan }))
+        const { title, price, duration, description, videoCount, audioCount } = req.body;
+        const sunbcriptionPlan = await SubsCriptionPlan.create({ title, price, duration, description, videoCount, audioCount });
+        res.status(201).json(Response({ message: "Subscription plan created successfully", status: "Created", stausCode: 201, data: sunbcriptionPlan }))
     } catch (error) {
+        console.log(error.message)
         res.status(500).json(Response({ message: "Error creating plan", status: "Error", stausCode: 500 }))
     }
 };
 
 const getSubscription = async (req, res) => {
-    console.log("getSubscription");
+    console.log("mewo")
     try {
         const suncriptionPlan = await SubsCriptionPlan.find();
-        res.status(200).json(Response({ message: "Subscription plan fetched successfully", status: "Success", stausCode: 200, data: suncriptionPlan }))
+        res.status(200).json(Response({ message: "Subscription plan fetched successfully", status: "Success", statusCode: 200, data: suncriptionPlan }))
     } catch (error) {
         res.status(500).json(Response({ message: "Error fetching plan", status: "Error", stausCode: 500 }))
     }
@@ -57,13 +58,18 @@ const buySubscription = async (req, res) => {
         const subcriptionPlan = await SubsCriptionPlan.findById(planId);
         console.log(subcriptionPlan)
         if (!subcriptionPlan) {
-            res.status(404).json(Response({ message: "Plan not found", status: "Error", stausCode: 404 }))
+            return res.status(404).json(Response({ message: "Plan not found", status: "Error", stausCode: 404 }))
+        }
+        const checkSubscription = await Subscription.findOne({ userId: userId });
+        if (checkSubscription) {
+            return res.status(400).json(Response({ message: "You already subribed a plan" }))
         }
         const startDate = new Date();
         const endDate = new Date(startDate.getTime() + subcriptionPlan.duration * 24 * 60 * 60 * 1000); // Adding duration in milliseconds
 
         const subscription = await Subscription.create({
             planId,
+            price: subcriptionPlan.price,
             userId: userId,
             payment: payment,
             startDate,
@@ -93,7 +99,16 @@ const useSubcription = async (req, res) => {
         console.log(error);
         res.status(500).json(Response({ message: "Error using plan", status: "Error", stausCode: 500 }))
     }
-}
+};
+
+const calculate = async (req, res) => {
+    try {
+        const therapistId = req.params.therapistId;
+
+    } catch (error) {
+
+    }
+};
 
 module.exports = {
     createSubscription,

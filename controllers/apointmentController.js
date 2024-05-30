@@ -169,8 +169,6 @@ const userApointmentHistory = async (req, res) => {
 };
 
 
-
-
 module.exports = {
     getApointment,
     // assignDoctor,
