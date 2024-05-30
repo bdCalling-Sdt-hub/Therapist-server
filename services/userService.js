@@ -136,6 +136,7 @@ const verifyCodeService = async ({ user, code }) => {
 };
 
 const setPasswordService = async ({ user, password }) => {
+    console.log(user, password)
     try {
         if (user.oneTimeCode === "Verified") {
             user.password = password;

@@ -184,6 +184,10 @@ const fileMessage = async (req, res) => {
             newMessageType = 'text';
         }
 
+        // else if (message) {
+        //     newMessageType = 'text';
+        // }
+
         const modifiedFile = {
             publicFileURL: file.path,
             path: file.path,

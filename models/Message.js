@@ -11,7 +11,7 @@ const messageSchema = new mongoose.Schema({
     sendTime: { type: String, required: true },
     messageType: {
         type: String,
-        enum: ['text', 'image', 'text/image'], // Define allowed values
+        enum: ['text', 'image', 'audio', 'text/image'], // Define allowed values
         default: 'text',
         required: false
     }

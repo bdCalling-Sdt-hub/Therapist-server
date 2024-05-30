@@ -39,6 +39,7 @@ const verifyAnswerByAdmin = async (req, res) => {
         console.log(answeredByUser)
         res.status(200).json(Response({ message: "User answer succesfuly", data: answeredByUser, status: "Okay", statusCode: 200 }))
     } catch (error) {
+        console.log(error.message)
         res.status(500).json(Response({ message: "Internal server Error" }));
     }
 };
