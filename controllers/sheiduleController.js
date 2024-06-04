@@ -433,7 +433,7 @@ const allAppontment = async (req, res) => {
     } catch (error) {
         res.status(500).json(Response({ message: "Internal server error" }))
     }
-}
+};
 
 module.exports = {
     sheidule,
