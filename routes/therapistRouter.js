@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 
 //import controllers
-const { apply, acceptTherapistRequest, getTherapist, signIn, therapistProfile, updateTherapist, newTherapistForMessage } = require('../controllers/therapistController');
+const { apply, acceptTherapistRequest, getTherapist, signIn, therapistProfile, updateTherapist, newTherapistForMessage, therapistRequest, therspistPayment } = require('../controllers/therapistController');
 
 //import middleware
 const upload = require('../middlewares.js/fileUpload');
@@ -20,6 +20,8 @@ router.get('/:therapistId', isValidUser, getTherapist);
 router.post('/sign-in', signIn);
 router.post('/update', upload.single("image"), isValidUser, updateTherapist);
 router.get('/welcome-message/default', newTherapistForMessage);
+router.get('/applied/therapist', therapistRequest);
+router.get('/payment/count/:therspistId', therspistPayment);
 
 
 

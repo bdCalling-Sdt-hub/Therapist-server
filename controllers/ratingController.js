@@ -12,6 +12,7 @@ const createRating = async (req, res) => {
 
         const userId = req.body.userId;
         const rating = req.body.rating;
+        console.log(rating)
         let modifiedRating;
         if (rating === "Meow1") {
             modifiedRating = 1;
@@ -33,7 +34,7 @@ const createRating = async (req, res) => {
         await therapist.save();
         res.status(201).json(Response({ message: "Rated succesfuly", data: newRating, status: "Created", statusCode: 201 }))
     } catch (error) {
-
+        console.log(error.message)
         res.status(500).json(Response({ message: "Internal server Error" }));
     }
 };

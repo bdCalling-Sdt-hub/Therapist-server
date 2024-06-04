@@ -7,7 +7,7 @@ const sheiduleSchema = new mongoose.Schema({
     therapistId: { type: mongoose.Schema.Types.ObjectId, ref: "Therapist", required: true },
     completed: { type: Boolean, default: false },
     isBooked: { type: Boolean, default: false },
-    bookingType: { type: String, enum: ["Video", "Audio", "Message"], default: "Message" },
+    // bookingType: { type: String, enum: ["Video", "Audio", "Message"], default: "Message", required: false },
     userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: false },
     therapistPayment: { type: Number, required: false }
 },

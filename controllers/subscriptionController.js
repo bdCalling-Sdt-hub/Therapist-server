@@ -1,4 +1,3 @@
-const { response } = require("../app");
 const Response = require("../helpers/response");
 const SubsCriptionPlan = require("../models/SubsCriptionPlan");
 const Subscription = require("../models/Subscription");
@@ -6,9 +5,9 @@ const Subscription = require("../models/Subscription");
 const createSubscription = async (req, res) => {
     console.log("createSubscription");
     try {
-        const { title, price, duration, description, videoCount, audioCount } = req.body;
-        const sunbcriptionPlan = await SubsCriptionPlan.create({ title, price, duration, description, videoCount, audioCount });
-        res.status(201).json(Response({ message: "Subscription plan created successfully", status: "Created", stausCode: 201, data: sunbcriptionPlan }))
+        const { title, price, duration, description, sessionCount, planType } = req.body;
+        const sunbcriptionPlan = await SubsCriptionPlan.create({ title, price, duration, description, sessionCount, planType });
+        res.status(201).json(Response({ message: "Subscription plan created successfully", status: "Created", statusCode: 201, data: sunbcriptionPlan }))
     } catch (error) {
         console.log(error.message)
         res.status(500).json(Response({ message: "Error creating plan", status: "Error", stausCode: 500 }))
@@ -16,12 +15,30 @@ const createSubscription = async (req, res) => {
 };
 
 const getSubscription = async (req, res) => {
-    console.log("mewo")
+    console.log("Fetching subscription plans...");
     try {
-        const suncriptionPlan = await SubsCriptionPlan.find();
-        res.status(200).json(Response({ message: "Subscription plan fetched successfully", status: "Success", statusCode: 200, data: suncriptionPlan }))
+        const search = req.query.search || "";
+        const searchRegExp = new RegExp(".*" + search + ".*", "i");
+
+        const subscriptionPlans = await SubsCriptionPlan.find({
+            planType: {
+                $regex: searchRegExp
+            }
+        });
+
+        res.status(200).json({
+            message: "Subscription plan fetched successfully",
+            status: "Success",
+            statusCode: 200,
+            data: subscriptionPlans
+        });
     } catch (error) {
-        res.status(500).json(Response({ message: "Error fetching plan", status: "Error", stausCode: 500 }))
+        console.error("Error fetching subscription plans:", error.message);
+        res.status(500).json({
+            message: "Error fetching plan",
+            status: "Error",
+            statusCode: 500
+        });
     }
 };
 
@@ -62,7 +79,7 @@ const buySubscription = async (req, res) => {
         }
         const checkSubscription = await Subscription.findOne({ userId: userId });
         if (checkSubscription) {
-            return res.status(400).json(Response({ message: "You already subribed a plan" }))
+            return res.status(400).json(Response({ message: "You already subcribed a plan" }))
         }
         const startDate = new Date();
         const endDate = new Date(startDate.getTime() + subcriptionPlan.duration * 24 * 60 * 60 * 1000); // Adding duration in milliseconds
@@ -73,8 +90,8 @@ const buySubscription = async (req, res) => {
             userId: userId,
             payment: payment,
             startDate,
-            videoCount: subcriptionPlan.videoCount,
-            audioCount: subcriptionPlan.audioCount,
+            sessionCount: subcriptionPlan.sessionCount,
+            duaration: subcriptionPlan.duration,
             endDate,
             transactionId: req.body.transactionId
         });
@@ -98,15 +115,6 @@ const useSubcription = async (req, res) => {
     } catch (error) {
         console.log(error);
         res.status(500).json(Response({ message: "Error using plan", status: "Error", stausCode: 500 }))
-    }
-};
-
-const calculate = async (req, res) => {
-    try {
-        const therapistId = req.params.therapistId;
-
-    } catch (error) {
-
     }
 };
 

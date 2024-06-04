@@ -20,6 +20,7 @@ const userSchema = new mongoose.Schema({
         set: (v) => bcrypt.hashSync(v, bcrypt.genSaltSync(10))
     },
     phone: { type: String, required: false },
+    assign: { type: Boolean, required: false, default: false },
     dateOfBirth: { type: String, required: false },
     countryCode: { type: String, required: false },
     privacyPolicyAccepted: { type: Boolean, default: false, required: true },
@@ -31,6 +32,11 @@ const userSchema = new mongoose.Schema({
     subscription: { type: String, required: true, enum: ["free", "standard", "premium"], default: "free" },
     oneTimeCode: { type: String, required: false, default: null },
     answer: { type: Boolean, required: false, default: false },
+    therapyType: {
+        type: String,
+        enum: ["Teen Therapy", "Couple Therapy", "Individual"],
+        default: "Individual", required: false
+    },
 }, {
     toJSON: {
         transform(doc, ret) {

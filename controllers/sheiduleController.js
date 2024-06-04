@@ -235,15 +235,15 @@ const createSheidule = async (req, res) => {
 
 const bookSchedule = async (req, res) => {
     try {
-        const scheduleId = req.params.scheduleId;
-        const userId = req.body.userId;
-        const bookingType = req.body.bookingType;
-        console.log("meow", userId);
+        const { scheduleId } = req.params;
+        const { userId } = req.body;
+
+        console.log("User ID:", userId);
 
         // Find the schedule by its ID
         const schedule = await Sheidule.findById(scheduleId);
         if (!schedule) {
-            return res.status(404).json(Response({ message: "Schedule not found", status: "Error", statusCode: 404 }));
+            return res.status(404).json({ message: "Schedule not found", status: "Error", statusCode: 404 });
         }
 
         // Find the appointment for the user
@@ -251,43 +251,35 @@ const bookSchedule = async (req, res) => {
         if (!appointment) {
             appointment = new Apointment({ userId: userId });
         }
-        console.log("hiiiiiiiiii", appointment);
+        console.log("Appointment found or created:", appointment);
 
         // Find the subscription package for the user
-        const package = await Subscription.findOne({ userId: userId });
-        if (!package) {
-            return res.status(404).json(Response({ message: "Subscription package not found", status: "Error", statusCode: 404 }));
+        const subscriptionPackage = await Subscription.findOne({ userId: userId });
+        if (!subscriptionPackage) {
+            return res.status(404).json({ message: "Subscription package not found", status: "Error", statusCode: 404 });
         }
-        console.log(package);
+        console.log("Subscription package:", subscriptionPackage);
 
-        // Check if there are available counts for the booking type
-        if ((bookingType === "Video" && package.videoCount === 0) ||
-            (bookingType === "Audio" && package.audioCount === 0)) {
-            return res.status(400).json(Response({ message: "Please buy a package", status: "Error", statusCode: 400 }));
+        // Check if there are available sessions for booking
+        if (subscriptionPackage.sessionCount === 0) {
+            return res.status(400).json({ message: "Please buy a package", status: "Error", statusCode: 400 });
         }
 
         // Update schedule and appointment
         appointment.scheduleId = scheduleId;
         schedule.userId = userId;
-        schedule.bookingType = bookingType;
         schedule.isBooked = true;
 
         await schedule.save();
         await appointment.save();
 
-        // Update the subscription counts based on booking type
-        if (bookingType === "Video") {
-            package.videoCount -= 1;
-        } else if (bookingType === "Audio") {
-            package.audioCount -= 1;
-        }
+        subscriptionPackage.sessionCount -= 1;
+        await subscriptionPackage.save();
 
-        await package.save();
-
-        res.status(200).json(Response({ message: "Schedule booked successfully", data: schedule, status: "Okay", statusCode: 200 }));
+        res.status(200).json({ message: "Schedule booked successfully", data: schedule, status: "Okay", statusCode: 200 });
     } catch (error) {
-        console.error(error.message);
-        res.status(500).json(Response({ message: "Internal Server Error" }));
+        console.error("Error booking schedule:", error.message);
+        res.status(500).json({ message: "Internal Server Error" });
     }
 };
 
@@ -341,7 +333,7 @@ const checkValidSchedule = async (req, res) => {
         console.log(schedule);
 
         if (!schedule) {
-            return res.status(404).json(Response({ message: "Schedule not found", statusCode: 200, status: "Okay" }));
+            return res.status(404).json(Response({ message: "Schedule not found", statusCode: 404, status: "Okay" }));
         }
 
         const scheduleDate = schedule.date;
@@ -349,7 +341,7 @@ const checkValidSchedule = async (req, res) => {
         const scheduleFromTimePlus40Minutes = addMinutes(scheduleFromTime, 40);
 
         if (formattedDate !== scheduleDate || formattedTime < scheduleFromTime || formattedTime > scheduleFromTimePlus40Minutes) {
-            return res.status(400).json(Response({ message: "You don't have a schedule at this time", statusCode: 200, status: "Okay" }));
+            return res.status(404).json(Response({ message: "You don't have a schedule at this time", statusCode: 404, status: "Okay" }));
         }
 
         return res.status(200).json(Response({ message: "Schedule is valid", statusCode: 200, status: "Okay" }));
@@ -403,14 +395,43 @@ const afterSessionCalculate = async (req, res) => {
 
 const therapistPayment = async (req, res) => {
     try {
-        const page = Number(req.query.page) || 1;
-        const limit = Number(req.query.limit) | 10;
-        const therapist = await Sheidule.find({ completed: true }).populate("therapistId");
+        // const page = Number(req.query.page) || 1;
+        // const limit = Number(req.query.limit) || 1; // Corrected here
+        const therapist = await Sheidule.find({ completed: true })
+            // .skip((page - 1) * limit)
+            // .limit(limit)
+            .populate("therapistId");
         const therapistCount = await Sheidule.countDocuments({ completed: true });
-        const info = pagination(therapistCount, limit, page);
-        res.status(200).json(Response({ message: "Need to payment therapist", data: therapist, pagination: info, status: "Okay", stausCode: 200 }));
+        res.status(200).json(Response({
+            message: "Need to payment therapist",
+            data: therapist,
+            // pagination: info,
+            status: "Okay",
+            statusCode: 200 // Fixed typo
+        }));
     } catch (error) {
-        res.status(500).json(Response({ message: "Internal server Error" }))
+        console.log(error.message)
+        res.status(500).json(Response({ message: "Internal server Error" }));
+    }
+};
+
+const recentSession = async (req, res) => {
+    try {
+        // Find sessions where completed is false and sort them by createdAt in descending order
+        const recentSessions = await Sheidule.find({ completed: false }).sort({ createdAt: -1 }).populate("therapistId");
+
+        res.status(200).json(Response({ data: recentSessions, message: "Recent session retrieve succesfuly", status: "Okay", statusCode: 200 }));
+    } catch (error) {
+        res.status(500).json({ message: "Internal server error" });
+    }
+};
+
+const allAppontment = async (req, res) => {
+    try {
+        const allAppointments = await Sheidule.find({}).populate('therapistId').populate('userId')
+        res.status(200).json(Response({ message: "All apointment retrieve seccesfuly", data: allAppointments, status: "Okay", statusCode: 200 }))
+    } catch (error) {
+        res.status(500).json(Response({ message: "Internal server error" }))
     }
 }
 
@@ -426,5 +447,7 @@ module.exports = {
     completedSession,
     checkValidSchedule,
     afterSessionCalculate,
-    therapistPayment
+    therapistPayment,
+    recentSession,
+    allAppontment
 };

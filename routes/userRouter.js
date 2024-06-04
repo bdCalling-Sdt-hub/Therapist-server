@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 
 //import controllers
-const { signUp, signIn, forgotPassword, verifyCode, changePassword, setPassword, updateProfile, profile, totalPatients, patients, singlePatients, singleUser } = require('../controllers/userController');
+const { signUp, signIn, forgotPassword, verifyCode, changePassword, setPassword, updateProfile, profile, totalPatients, patients, singlePatients, singleUser, assignedList, topTherapist } = require('../controllers/userController');
 const upload = require('../middlewares.js/fileUpload');
 const { isValidUser } = require('../middlewares.js/auth');
 
@@ -19,5 +19,7 @@ router.get('/totall-patients', isValidUser, totalPatients);
 router.get('/patients-all', patients);
 router.get('/patient/:patientId', singlePatients);
 router.get('/:userId', singleUser);
+router.get('/assigned/list/:therapistId', assignedList);
+router.get('/top/therapist', topTherapist);
 
 module.exports = router;

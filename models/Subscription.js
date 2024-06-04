@@ -19,10 +19,10 @@ const subscriptionSchema = new mongoose.Schema({
         type: Date,
         required: true
     },
-    videoCount: {
+    sessionCount: {
         type: Number,
     },
-    audioCount: {
+    duaration: {
         type: Number,
     },
     payment: {

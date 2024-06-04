@@ -8,6 +8,7 @@ const { createJSONWebToken } = require("../helpers/jsonWebToken");
 const emailWithNodemailer = require("../helpers/email");
 const { deleteImage } = require("../helpers/deleteImage");
 const pagination = require("../helpers/pagination");
+const Sheidule = require("../models/Sheidule");
 
 const apply = async (req, res) => {
     try {
@@ -166,6 +167,7 @@ const acceptTherapistRequest = async (req, res) => {
         const actionType = req.body.actionType;
         console.log(therapistId);
         const checkAdmin = await User.findById(req.body.userId);
+        console.log(checkAdmin)
         if (checkAdmin.isAdmin !== true) {
             return res.status(400).json(Response({ message: "You are not authorize", status: "Bad Request", statusCode: "400" }));
         }
@@ -194,18 +196,17 @@ const acceptTherapistRequest = async (req, res) => {
 const getTherapist = async (req, res) => {
     console.log("get therapist");
     try {
-        const limit = parseInt(req.query.limit) || 1; // Default limit is 10, or use the provided limit if any
+        const limit = parseInt(req.query.limit) || 2; // Default limit is 10, or use the provided limit if any
         const page = parseInt(req.query.page) || 1; // Default page is 1, or use the provided page if any
 
-        const therapistCount = await Therapist.countDocuments();
+        const therapistCount = await Therapist.countDocuments({ accepted: true });
         const pageInfo = pagination(therapistCount, limit, page);
-        console.log(pageInfo.skip)
 
-        const therapists = await Therapist.find().skip((page - 1) * limit).limit(limit);
+        const therapists = await Therapist.find({ accepted: true }).skip((page - 1) * limit).limit(limit);
 
         res.status(200).json(Response({ message: "Therapists found successfully", status: "OK", statusCode: "200", data: therapists, pagination: pageInfo }));
     } catch (error) {
-        console.error(error);
+        console.error(error.message);
         res.status(500).json(Response({ message: "Internal Server Error", status: "Internal Server Error", statusCode: "500" }));
     }
 };
@@ -298,6 +299,31 @@ const updateTherapist = async (req, res) => {
     }
 };
 
+const therapistRequest = async (req, res) => {
+    try {
+        const therapist = await Therapist.find({ accepted: false });
+        console.log(therapist)
+        res.status(200).json(Response({ message: "Requested therapist", data: therapist }))
+    } catch (error) {
+        console.log(error.message)
+        res.status(200).json("send")
+    }
+};
+
+const therspistPayment = async (req, res) => {
+    try {
+        const therspistId = req.params.therapistId;
+        const therapistPaymentCount = await Sheidule.find({ therspistId: therspistId });
+        // Sum up the therapistPayment values
+        const totalPayment = therapistPaymentCount
+            .filter(payment => payment.therapistPayment !== undefined)
+            .reduce((acc, payment) => acc + payment.therapistPayment, 0);
+        res.status(200).json(Response({ message: "Therspist payment", data: totalPayment, status: 200, statusCode: "Okay" }))
+    } catch (error) {
+        res.status(200).json(Response({ message: "Internal server error" }))
+    }
+};
+
 module.exports = {
     apply,
     acceptTherapistRequest,
@@ -307,5 +333,8 @@ module.exports = {
     signIn,
     therapistProfile,
     updateTherapist,
-    newTherapistForMessage
+    newTherapistForMessage,
+    therapistRequest,
+    therspistPayment,
+    therspistPayment
 }

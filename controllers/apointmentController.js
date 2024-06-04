@@ -4,7 +4,6 @@ const Apointment = require("../models/Apointment");
 const Package = require("../models/Package");
 const Sheidule = require("../models/Sheidule");
 const User = require("../models/User");
-const { sheidule } = require("./sheiduleController");
 
 const getApointment = async (req, res) => {
     const { packageId, date, time } = req.body;
@@ -23,38 +22,42 @@ const getApointment = async (req, res) => {
 
 };
 
-// const assignDoctor = async (req, res) => {
-//     try {
-//         console.log("meow")
-//         const doctorId = req.body.doctorId;
-//         const appointment = await Apointment.findById(req.params.id);
-//         console.log(appointment);
-//         if (!appointment) {
-//             res.status(404).json(Response({ message: "Appointment not found", type: "Appointment", status: "Not Found", statusCode: 404 }));
-//             return;
-//         }
-//         appointment.referTo = req.body.doctorId;
-//         await appointment.save();
-//         res.status(200).json(Response({ message: "Doctor assigned successfully", data: appointment, type: "Appointment", status: "OK", statusCode: 200 }));
-//     } catch (error) {
-//         res.status(500).json(Response({ message: "Internal Server Error", type: "Appointment", status: "Internal Server Error", statusCode: 500 }));
-//     }
-// };
-
 const assignTherapist = async (req, res) => {
     try {
-        const therapist = req.body.therapistId;
-        const user = req.params.userId;
-        // console.log("hiii", user)
-        // console.log("hello", therapist)
-        const apointment = await Apointment.create({
-            userId: user,
-            therapistId: therapist
+        const therapistId = req.body.therapistId;
+        const userId = req.params.userId;
+
+        // Find the user by ID
+        const user = await User.findById(userId);
+
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        // Check if the user already has an assigned therapist
+        if (user.assign == true) {
+            return res.status(200).json({ message: "You already assigned a therapist" });
+        }
+
+        // Create the appointment
+        const appointment = await Apointment.create({
+            userId: userId,
+            therapistId: therapistId
         });
-        res.status(200).json(Response({ message: "Therapist assign succesfuly", statusCode: 200, status: "Okay", data: apointment }))
+
+        // Update the user's assign status
+        user.assign = true;
+        await user.save();
+
+        res.status(200).json({
+            message: "Therapist assigned successfully",
+            statusCode: 200,
+            status: "Okay",
+            data: appointment
+        });
     } catch (error) {
-        console.log(error.message)
-        res.status(500).json("Internal server error")
+        console.log(error.message);
+        res.status(500).json("Internal server error");
     }
 };
 

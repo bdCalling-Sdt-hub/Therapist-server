@@ -114,7 +114,7 @@ const signIn = async (req, res, next) => {
         }
 
         // Compare the provided password with the stored hashed password
-        const isPasswordValid = await bcrypt.compare(password, user.password); // Await the comparison
+        const isPasswordValid = bcrypt.compare(password, user.password); // Await the comparison
         console.log("---------------", isPasswordValid);
 
         if (!isPasswordValid) {
@@ -349,22 +349,52 @@ const updateProfile = async (req, res) => {
 const totalPatients = async (req, res) => {
     try {
         const page = Number(req.query.page) || 1;
-        const limit = Number(req.query.limit) || 5;
-        const therapistId = req.body.userId;
-        const patients = await Sheidule.find({ therapistId: therapistId, isAdmin: { $ne: true }, isBooked: true }).populate('userId')
-        const patientsCount = await Sheidule.countDocuments({ therapistId: therapistId, isAdmin: { $ne: true }, isBooked: true });
-        const patientInfo = pagination(patientsCount, limit, page);
-        res.status(200).json(Response({ message: "Patients count retrieve succesfuly", statusCode: 200, status: "Okay", data: { patients: patients, pagination: patientInfo } }))
+        const limit = Number(req.query.limit) || 5; // Default limit set to 5
+        const search = req.query.search || "";
+        const searchRegEx = new RegExp('.*' + search + '.*', 'i');
+
+        const filter = {
+            therapistId: req.body.userId,
+            isAdmin: { $ne: true },
+            isBooked: true,
+        };
+        const options = {
+            password: 0
+        };
+
+        const patients = await Sheidule.find(filter)
+            .limit(limit)
+            .skip((page - 1) * limit)
+            .populate('userId');
+
+        const patientsCount = await Sheidule.countDocuments(filter);
+        const totalPages = Math.ceil(patientsCount / limit);
+
+        res.status(200).json(Response({
+            message: "Patients count retrieved successfully",
+            statusCode: 200,
+            status: "Okay",
+            data: {
+                patients,
+                pagination: {
+                    totalPages,
+                    currentPage: page,
+                    previousPage: page > 1 ? page - 1 : null,
+                    nextPage: page < totalPages ? page + 1 : null,
+                    totalItems: patientsCount
+                }
+            }
+        }));
 
     } catch (error) {
-        console.log(error.message)
-        res.status(500).json(Response({ message: "Internal server Error" }))
+        console.log(error.message);
+        res.status(500).json(Response({ message: "Internal server Error" }));
     }
 };
 
 const patients = async (req, res) => {
     try {
-        const patients = await User.find({ isAdmin: false, answer: true, role: "Patient" })
+        const patients = await User.find({ isAdmin: false, answer: true, role: "Patient", assign: { $ne: true } })
         res.status(200).json(Response({ message: "Patients retrieve succesfully", status: "Okay", statusCode: 200, data: patients }))
     } catch (error) {
         res.status(500).json(Response({ message: "Internal server Error" }));
@@ -392,6 +422,34 @@ const singleUser = async (req, res) => {
     }
 };
 
+const assignedList = async (req, res) => {
+    try {
+        const therapistId = req.params.therapistId;
+        const assinedLits = await Sheidule.find({ therapistId: therapistId, isBooked: true }).populate('userId');
+        // console.log(assignedList)
+        res.status(200).json(Response({ message: "Assined therapist list and patient", status: "Okay", statusCode: 200, data: assinedLits }))
+    } catch (error) {
+        res.status(400).json(Response({ message: "Internal server Error" }))
+    }
+};
+
+const topTherapist = async (req, res) => {
+    try {
+        // Find therapists with a defined rating and sort them by ratings in descending order
+        const topTherapists = await Therapist.aggregate([
+            { $match: { rating: { $exists: true, $ne: null } } },  // Ensure the rating field exists and is not null
+            { $sort: { ratingCount: -1, rating: -1 } }  // Sort by the number of ratings and then by the rating itself
+        ]);
+
+        res.status(200).json({ message: "Top rated therapist", data: topTherapists, status: 200, statusCode: "Okay" });
+    } catch (error) {
+        console.log(error.message);
+        res.status(500).json({ message: "Internal server error" });
+    }
+};
+
+
+
 
 module.exports = {
     signUp,
@@ -405,5 +463,7 @@ module.exports = {
     totalPatients,
     patients,
     singlePatients,
-    singleUser
+    singleUser,
+    assignedList,
+    topTherapist
 };

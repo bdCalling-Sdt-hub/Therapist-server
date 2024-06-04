@@ -1,5 +1,4 @@
 const { mongoose } = require("mongoose");
-const { response } = require("../app");
 const Response = require("../helpers/response");
 const Chat = require("../models/Chat");
 const Message = require("../models/Message");
@@ -166,23 +165,23 @@ const getChatList = async (req, res) => {
 
 const fileMessage = async (req, res) => {
     try {
-        const { senderId, participant, message } = req.body;
+        const { senderId, participant, message, messageType } = req.body;
         const file = req.file;
         // if (!file) {
         //     return res.status(400).json({ error: "No file uploaded" });
         // }
 
-        let newMessageType;
+        // let newMessageType;
 
-        if (!file && !message) {
-            return res.status(400).json({ error: "No file or message uploaded" });
-        } else if (file && message) {
-            newMessageType = 'text/image';
-        } else if (file) {
-            newMessageType = "image";
-        } else if (message) {
-            newMessageType = 'text';
-        }
+        // if (!file && !message) {
+        //     return res.status(400).json({ error: "No file or message uploaded" });
+        // } else if (file && message) {
+        //     newMessageType = 'text/image';
+        // } else if (file) {
+        //     newMessageType = "image";
+        // } else if (message) {
+        //     newMessageType = 'text';
+        // }
 
         // else if (message) {
         //     newMessageType = 'text';
@@ -193,11 +192,11 @@ const fileMessage = async (req, res) => {
             path: file.path,
             senderId,
             participant,
-            messageType: newMessageType,
+            messageType: messageType,
             message
         };
         console.log(modifiedFile)
-        console.log(newMessageType)
+        // console.log(newMessageType)
         // Search for existing chat between sender and receiver, regardless of the order of senderId and participant
         const searchChat = await Chat.findOne({
             $or: [

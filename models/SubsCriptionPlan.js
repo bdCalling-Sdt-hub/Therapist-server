@@ -9,13 +9,14 @@ const subscriptionPlanSchema = new mongoose.Schema({
         type: Number,
         required: true
     },
-    videoCount: {
+    sessionCount: {
         type: Number,
         required: false
     },
-    audioCount: {
-        type: Number,
-        required: false
+    planType: {
+        type: String,
+        enum: ["Individual and Teen", "Couple"],
+        default: "Individual and Teen"
     },
     duration: {
         type: Number,

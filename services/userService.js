@@ -2,7 +2,6 @@ const emailWithNodemailer = require("../helpers/email");
 const User = require("../models/User");
 const bcrypt = require('bcryptjs');
 const { createJSONWebToken } = require('../helpers/jsonWebToken');
-const { forgotPassword } = require("../controllers/userController");
 
 const userRegister = async (userDetails) => {
     try {
