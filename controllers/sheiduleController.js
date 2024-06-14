@@ -7,6 +7,7 @@ const Therapist = require("../models/Therapist");
 const User = require("../models/User");
 const pagination = require("../helpers/pagination");
 const mongoose = require('mongoose');
+const { ObjectId } = require('mongodb');
 
 // const sheidule = async (req, res) => {
 //     try {
@@ -318,6 +319,7 @@ const completedSession = async (req, res) => {
 const checkValidSchedule = async (req, res) => {
     try {
         const userId = req.body.userId;
+        const convertedUserId = new ObjectId(userId);
         const therapistId = req.params.therapistId;
         const { formattedDate, formattedTime } = getCurrentDateAndTimeFormatted();
 
@@ -325,7 +327,7 @@ const checkValidSchedule = async (req, res) => {
 
         const schedule = await Sheidule.findOne({
             $or: [
-                { userId: userId },
+                { userId: convertedUserId },
                 { therapistId: therapistId }
             ]
         });
