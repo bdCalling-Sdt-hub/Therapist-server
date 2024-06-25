@@ -28,7 +28,7 @@ const { connectToDatabase } = require('./helpers/connection');
 const validateResponse = require('./middlewares.js/validator');
 
 // Import models
-const Appointment = require('./models/Apointment');
+const Sheidule = require('./models/Sheidule');
 const Notification = require('./models/Notification');
 
 
@@ -80,30 +80,6 @@ console.log("sdjfkhnkjhf");
 // test route
 app.get('/api/test', (req, res) => {
   res.send('I am responding!');
-});
-
-
-// Cron job to send notifications based on appointment data
-const checkAppointments = async () => {
-  const now = new Date();
-  const twoMinutesAgo = new Date(now.getTime() - 2 * 60 * 1000);
-
-  const appointments = await Appointment.find({
-    date: { $lte: twoMinutesAgo }
-  });
-
-  for (const appointment of appointments) {
-    const notification = new Notification({
-      userId: appointment.userId,
-      message: `Your appointment with ID ${appointment._id} was scheduled for ${appointment.date}`
-    });
-    await notification.save();
-  }
-};
-
-cron.schedule('* * * * *', () => {
-  console.log('Checking for appointments...');
-  checkAppointments();
 });
 
 
