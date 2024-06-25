@@ -419,14 +419,28 @@ const therapistPayment = async (req, res) => {
 
 const recentSession = async (req, res) => {
     try {
-        // Find sessions where completed is false and sort them by createdAt in descending order
-        const recentSessions = await Sheidule.find({ completed: false }).sort({ createdAt: -1 }).populate("therapistId");
+        const { date } = req.query; // Get the date from the query parameters
 
-        res.status(200).json(Response({ data: recentSessions, message: "Recent session retrieve succesfuly", status: "Okay", statusCode: 200 }));
+        // Create the query object
+        let query
+        if (date) {
+            query = { completed: false, date: date };
+        };
+
+        // Find sessions where completed is false and filter by the date, sort by createdAt in descending order
+        const recentSessions = await Sheidule.find(query).sort({ createdAt: -1 }).populate("therapistId");
+
+        res.status(200).json({
+            data: recentSessions,
+            message: "Recent session retrieved successfully",
+            status: "Okay",
+            statusCode: 200
+        });
     } catch (error) {
         res.status(500).json({ message: "Internal server error" });
     }
 };
+
 
 const allAppontment = async (req, res) => {
     try {

@@ -9,6 +9,7 @@ const Apointment = require("../models/Apointment");
 const Sheidule = require("../models/Sheidule");
 const pagination = require("../helpers/pagination");
 const { createChat, saveMessage } = require("./messageController");
+const { therapistPayment } = require("./sheiduleController");
 
 // const { validationResult } = require('express-validator'); // For input validation
 
@@ -449,6 +450,23 @@ const topTherapist = async (req, res) => {
 };
 
 
+const totalUsers = async (req, res) => {
+    console.log("mewo")
+    try {
+        const totalUsers = await User.countDocuments();
+        const totalTherapist = await Therapist.countDocuments();
+        console.log(totalUsers)
+        const user = {
+            therapist: totalUsers,
+            user: totalTherapist
+        }
+        res.status(200).json(Response({ message: "User count retrieve succesfully", statusCode: 200, status: "Okay", data: user }))
+    } catch {
+        res.status(500).json("Internal server error")
+    }
+};
+
+
 
 
 module.exports = {
@@ -465,5 +483,6 @@ module.exports = {
     singlePatients,
     singleUser,
     assignedList,
-    topTherapist
+    topTherapist,
+    totalUsers,
 };
